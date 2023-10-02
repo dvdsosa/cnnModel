@@ -1,29 +1,39 @@
-# README #
+# SEResNeXt trained with SCL
 
-This README would normally document whatever steps are necessary to get your application up and running.
+## DONE
+- [x] Preprocessing: padding and scaling.
+- [x] Preprocessing: min-max normalisation.
+- [ ] Supervised Contrastive Learning (SCL) configuration.
+	
+## TODO next day
+- CNN training.
 
-### What is this repository for? ###
+## Git repository
+Syncing local folder with remote repository:
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+	git fetch
+	git merge origin/master
 
-### How do I get set up? ###
+Syncing local changes with the remote server:
 
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
+	git push
 
-### Contribution guidelines ###
+To undo git add before a commit (unstage all changes):
 
-* Writing tests
-* Code review
-* Other guidelines
+	git reset
 
-### Who do I talk to? ###
 
-* Repo owner or admin
-* Other community or team contact
+## The seven rules of a great Git commit message
+
+* Separate subject from body with a blank line
+* Limit the subject line to 50 characters
+* Capitalize the subject line
+* Do not end the subject line with a period
+* Use the imperative mood in the subject line
+* Wrap the body at 72 characters
+* Use the body to explain what and why vs. how
+
+### Commits messages structured as follows:
+[https://www.conventionalcommits.org/en/v1.0.0/](https://www.conventionalcommits.org/en/v1.0.0/)
+
+[Commits style](https://chris.beams.io/posts/git-commit/)
