@@ -5,14 +5,14 @@ training dataset are converted to [0, 1]
   Author: dvdsosa
   Date: 2023-09-25
 """
-import cv2
+import cv2 # pip install opencv-contrib-python
 import numpy as np
 import os
 from tqdm import tqdm  # Import tqdm for progress bar
 
 # Define the input and output folder paths
-input_folder_path = "/Users/dvdsosa/Projects/ARGO/pCabildo/tesis/articulos/02procesado/DYB-Test"
-output_folder_path = "/Users/dvdsosa/Projects/ARGO/pCabildo/tesis/articulos/02procesado/DYB-Test2"
+input_folder_path = "/home/dsosatr/tesis/DYB-PlanktonNew"
+output_folder_path = "/home/dsosatr/tesis/DYB-PlanktonNewNormalized"
 
 # Function to preprocess and save an image
 def preprocess_image(input_path, output_path):
