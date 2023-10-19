@@ -1,12 +1,15 @@
 # SEResNeXt trained with SCL
 
 ## DONE
-- [x] Preprocessing: padding and scaling.
-- [x] Preprocessing: min-max normalisation.
-- [ ] Supervised Contrastive Learning (SCL) configuration.
+- [x] Preprocessing: calculate mean and std for Z-Score formula.
+- [ ] Added Supervised Contrastive Learning (SCL) repository.
 	
 ## TODO next day
 - CNN training.
+
+## Model training
+
+	python main_supcon.py --num_workers 8 --batch_size 128 --learning_rate 0.5 --temp 0.07 --cosine
 
 ## Git repository
 Syncing local folder with remote repository:
@@ -37,3 +40,10 @@ To undo git add before a commit (unstage all changes):
 [https://www.conventionalcommits.org/en/v1.0.0/](https://www.conventionalcommits.org/en/v1.0.0/)
 
 [Commits style](https://chris.beams.io/posts/git-commit/)
+
+## Other links
+[SCL repository](https://github.com/HobbitLong/SupContrast)
+
+## Markdown preview in Visual Studio Code
+
+To switch between views, press ⇧⌘V in the editor. You can view the preview side-by-side (⌘K V) with the file you are editing and see changes reflected in real-time as you edit.
