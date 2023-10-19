@@ -17,6 +17,8 @@ from util import set_optimizer, save_model
 from networks.resnet_big import SupConResNet
 from losses import SupConLoss
 
+from email_me import NotifyUser
+
 try:
     import apex
     from apex import amp, optimizers
@@ -259,6 +261,8 @@ def train(train_loader, model, criterion, optimizer, epoch, opt):
 
 
 def main():
+    start_time = time.time()
+
     opt = parse_option()
 
     # build data loader
@@ -297,6 +301,15 @@ def main():
         opt.save_folder, 'last.pth')
     save_model(model, optimizer, opt, opt.epochs, save_file)
 
+    # send notification email
+    notify_me = NotifyUser()
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    # Convert elapsed_time to days and hours format
+    elapsed_days = int(elapsed_time // (24 * 3600))
+    elapsed_hours = int((elapsed_time % (24 * 3600)) // 3600)
+
+    notify_me({'elapsed_days': elapsed_days, 'elapsed_hours': elapsed_hours})
 
 if __name__ == '__main__':
     main()

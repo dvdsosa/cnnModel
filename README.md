@@ -41,6 +41,11 @@ To undo git add before a commit (unstage all changes):
 
 [Commits style](https://chris.beams.io/posts/git-commit/)
 
+### Variable and function names convention (PEP 8, official style guide for Python code)
+* Variable names: my_variable, student_name, book_title
+* Function names: calculate_average, get_student_grade, print_book_details
+* Class names: MyClass, StudentRecord, BookDetails
+
 ## Other links
 [SCL repository](https://github.com/HobbitLong/SupContrast)
 
