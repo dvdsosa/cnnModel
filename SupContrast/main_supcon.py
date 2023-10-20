@@ -141,8 +141,8 @@ def set_loader(opt):
         mean = (0.5071, 0.4867, 0.4408)
         std = (0.2675, 0.2565, 0.2761)
     elif opt.dataset == 'dyb-planktonnet':
-        mean = (0.0011, 0.0010, 0.0010)
-        std = (0.0023, 0.0022, 0.0019)
+        mean = (0.0006, 0.0005, 0.0005)
+        std = (0.0011, 0.0011, 0.0010)
     elif opt.dataset == 'path':
         mean = eval(opt.mean)
         std = eval(opt.std)

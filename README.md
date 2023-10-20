@@ -24,10 +24,13 @@ Syncing local changes with the remote server:
 
 	git push
 
-To undo git add before a commit (unstage all changes):
+To remove the last commit in your local repository:
 
-	git reset
+	git reset --hard HEAD~1
 
+To force push this change to your remote repository:
+
+	git push origin +HEAD
 
 ## The seven rules of a great Git commit message
 

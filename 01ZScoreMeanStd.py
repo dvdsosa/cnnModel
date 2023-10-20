@@ -32,8 +32,8 @@ test_size = len(dataset) - train_size  # 20% for testing
 train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
 
 # Create data loaders for the training and testing sets
-train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=64, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True)
+test_loader = DataLoader(test_dataset, batch_size=128, shuffle=False)
 
 # Initialize lists to store the mean and std values
 mean = torch.zeros(3)
@@ -51,8 +51,11 @@ std.div_(len(train_dataset))
 
 print(f"Mean value: {mean}, \nStd value: {std}")
 
-torch.save(train_dataset, '../train_dataset_DYB-PlanktonNet.pth')
-torch.save(test_dataset, '../test_dataset_DYB-PlanktonNet.pth')
+# Add a name to the dataset
+train_dataset.dataset.name = 'DYB-PlanktonNet'
+
+torch.save(train_dataset.dataset, '../train_dataset_DYB-PlanktonNet.pth')
+torch.save(test_dataset.dataset, '../test_dataset_DYB-PlanktonNet.pth')
 
 # Load the dataset
 # train_dataset = torch.load('train_dataset_DYB-PlanktonNet.pth')
@@ -62,5 +65,5 @@ torch.save(test_dataset, '../test_dataset_DYB-PlanktonNet.pth')
 # tensor([0.0011, 0.0010, 0.0010])
 # tensor([0.0022, 0.0022, 0.0019])
 
-# Mean value: tensor([0.0011, 0.0010, 0.0010]),
-# Std value: tensor([0.0023, 0.0022, 0.0019])
+# Mean value: tensor([0.0006, 0.0005, 0.0005]), 
+# Std value: tensor([0.0011, 0.0011, 0.0010])
