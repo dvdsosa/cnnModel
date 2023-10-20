@@ -23,12 +23,9 @@ class NotifyUser(object):
         self.msg['From'] = 'soledadd1974@gmail.com'  # user's email address, as the sender
         self.msg['To'] = 'dvdsosa@gmail.com'  # destination email address
 
-    def __call__(self, tiempo):
+    def __call__(self, message: str) -> None:
         try:
-            self.msg.set_content(
-                f'Script execution completed!\n'
-                f'Elapsed time: {tiempo["elapsed_days"]} days {tiempo["elapsed_hours"]} hours\n'
-            )
+            self.msg.set_content(message)
 
             with smtplib.SMTP(self.smtp_server, self.smtp_port) as server:
                 server.starttls()

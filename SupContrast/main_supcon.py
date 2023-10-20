@@ -25,7 +25,6 @@ try:
 except ImportError:
     pass
 
-
 def parse_option():
     parser = argparse.ArgumentParser('argument for training')
 
@@ -129,6 +128,9 @@ def parse_option():
 
     return opt
 
+# Define the MinMaxNormalization function
+def min_max_normalization(image):
+    return (image - image.min()) / (image.max() - image.min())
 
 def set_loader(opt):
     # construct data loader
@@ -146,11 +148,17 @@ def set_loader(opt):
         std = eval(opt.std)
     else:
         raise ValueError('dataset not supported: {}'.format(opt.dataset))
+    # This normalization helps to standardize the input data and improve the 
+    # performance of neural networks. It ensures that each input parameter 
+    # (pixel, in this case) has a similar data distribution, which makes 
+    # the convergence of the network faster while training.
     normalize = transforms.Normalize(mean=mean, std=std)
 
     train_transform = transforms.Compose([
         transforms.RandomResizedCrop(size=opt.size, scale=(0.2, 1.)),
         transforms.RandomHorizontalFlip(),
+        # The parameters (0.4, 0.4, 0.4, 0.1) correspond to the amount of 
+        # jitter in brightness, contrast, saturation, and hue, respectively.
         transforms.RandomApply([
             transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)
         ], p=0.8),
@@ -261,8 +269,6 @@ def train(train_loader, model, criterion, optimizer, epoch, opt):
 
 
 def main():
-    start_time = time.time()
-
     opt = parse_option()
 
     # build data loader
@@ -301,15 +307,28 @@ def main():
         opt.save_folder, 'last.pth')
     save_model(model, optimizer, opt, opt.epochs, save_file)
 
-    # send notification email
-    notify_me = NotifyUser()
-    end_time = time.time()
-    elapsed_time = end_time - start_time
-    # Convert elapsed_time to days and hours format
-    elapsed_days = int(elapsed_time // (24 * 3600))
-    elapsed_hours = int((elapsed_time % (24 * 3600)) // 3600)
-
-    notify_me({'elapsed_days': elapsed_days, 'elapsed_hours': elapsed_hours})
-
 if __name__ == '__main__':
-    main()
+    notify_me = NotifyUser()
+
+    try:
+        start_time = time.time()
+        
+        main()
+
+        end_time = time.time()
+
+        # send notification email
+        elapsed_time = end_time - start_time
+        # Convert elapsed_time to days and hours format
+        elapsed_days = int(elapsed_time // (24 * 3600))
+        elapsed_hours = int((elapsed_time % (24 * 3600)) // 3600)
+        message = f'Script execution completed!\n' \
+          f'Elapsed time: {elapsed_days} days {elapsed_hours} hours\n'
+        notify_me(message)
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        # Add the code you want to execute when main() fails here
+        message = f'Script execution failed!\n ' \
+            f'Error: {e}'
+        notify_me(message)

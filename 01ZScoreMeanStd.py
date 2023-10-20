@@ -10,9 +10,9 @@ from torchvision import datasets, transforms
 from torch.utils.data import DataLoader, random_split
 from tqdm import tqdm
 
-class MinMaxNormalization(object):
-    def __call__(self, image):
-        return (image - image.min()) / (image.max() - image.min())
+# Define the MinMaxNormalization function
+def min_max_normalization(image):
+    return (image - image.min()) / (image.max() - image.min())
 
 # Define the transformation
 transform = transforms.Compose([
@@ -20,7 +20,7 @@ transform = transforms.Compose([
     transforms.Pad(2, fill=(255, 255, 255)),  # Add padding of size 2 to the image
     transforms.CenterCrop(224),  # Crop the center of the image to 224x224
     transforms.ToTensor(),  # Convert the image to a tensor
-    MinMaxNormalization(),  # Apply min-max normalization
+    min_max_normalization,  # Apply min-max normalization
 ])
 
 # Load the dataset

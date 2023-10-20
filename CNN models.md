@@ -1,11 +1,14 @@
 # SEResNeXt trained with SCL
 
 ## DONE
-- [x] Preprocessing: calculate the mean and standard deviation values used for Z-Score Normalization in main_supcon.py. This is performend on 01ZScoreMeanStd.py file.
-- [ ] Added Supervised Contrastive Learning (SCL) repository.
+- [x] Preprocessing: calculate mean and std for Z-Score formula.
+- [x] Added Supervised Contrastive Learning (SCL) repository.
+- [x] Manage error in the \_\_main\_\_ of main_supcon.py to send an email when it breaks.
+- [x] Added DYB-PlanktonNet dataset to main_supcon.py.
 	
 ## TODO next day
-- CNN training.
+- [] Modify the resnet_big.py accordingly to the number of classes in DYB-PlanktonNet.
+- [] CNN training.
 
 ## Model as a feature extractor
 

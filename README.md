@@ -2,14 +2,17 @@
 
 ## DONE
 - [x] Preprocessing: calculate mean and std for Z-Score formula.
-- [ ] Added Supervised Contrastive Learning (SCL) repository.
+- [x] Added Supervised Contrastive Learning (SCL) repository.
+- [x] Manage error in the \_\_main\_\_ of main_supcon.py to send an email when it breaks.
+- [x] Added DYB-PlanktonNet dataset to main_supcon.py.
 	
 ## TODO next day
-- CNN training.
+- [] Modify the resnet_big.py accordingly to the number of classes in DYB-PlanktonNet.
+- [] CNN training.
 
 ## Model training
 
-	python main_supcon.py --num_workers 8 --batch_size 128 --learning_rate 0.5 --temp 0.07 --cosine
+	python main_supcon.py --batch_size 128 --num_workers 8 --learning_rate 0.2 --lr_decay_epochs 10 --lr_decay_rate 0.0001 --weight_decay 1e-4 --momentum 0.9 --temp 0.07 --cosine
 
 ## Git repository
 Syncing local folder with remote repository:
