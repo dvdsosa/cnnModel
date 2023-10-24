@@ -1,18 +1,28 @@
 # SEResNeXt trained with SCL
 
-## DONE
+## TASKS
+
+### DONE
 - [x] Preprocessing: calculate mean and std for Z-Score formula.
 - [x] Added Supervised Contrastive Learning (SCL) repository.
 - [x] Manage error in the \_\_main\_\_ of main_supcon.py to send an email when it breaks.
 - [x] Added DYB-PlanktonNet dataset to main_supcon.py.
 	
-## TODO next day
+### TODO next day
 - [] Modify the resnet_big.py accordingly to the number of classes in DYB-PlanktonNet.
 - [] CNN training.
 
-## Model training
+## CNN Model
+
+### Model training
 
 	python main_supcon.py --batch_size 128 --num_workers 8 --learning_rate 0.2 --lr_decay_epochs 10 --lr_decay_rate 0.0001 --weight_decay 1e-4 --momentum 0.9 --temp 0.07 --cosine
+
+### Reviewing logs after model training
+
+In terminal, change path to where the log file exists, then:
+
+	tensorboard --logdir .
 
 ## Git repository
 Syncing local folder with remote repository:
@@ -31,6 +41,10 @@ To remove the last commit in your local repository:
 To force push this change to your remote repository:
 
 	git push origin +HEAD
+
+To see changes in a specific file:
+
+	git diff <file>
 
 ## The seven rules of a great Git commit message
 

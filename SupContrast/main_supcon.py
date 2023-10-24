@@ -105,11 +105,11 @@ def parse_option():
         opt.model_name = '{}_cosine'.format(opt.model_name)
 
     # warm-up for large-batch training,
-    if opt.batch_size > 256:
-        opt.warm = True
+#    if opt.batch_size > 256:
+    opt.warm = True
     if opt.warm:
         opt.model_name = '{}_warm'.format(opt.model_name)
-        opt.warmup_from = 0.01
+        opt.warmup_from = 0
         opt.warm_epochs = 10
         if opt.cosine:
             eta_min = opt.learning_rate * (opt.lr_decay_rate ** 3)
@@ -176,7 +176,7 @@ def set_loader(opt):
                                           transform=TwoCropTransform(train_transform),
                                           download=True)
     elif opt.dataset == 'dyb-planktonnet':
-        train_dataset = torch.load('../train_dataset_DYB-PlanktonNet.pth')
+        train_dataset = torch.load('../../train_dataset_DYB-PlanktonNet.pth')
         train_dataset.transform = TwoCropTransform(train_transform)
     elif opt.dataset == 'path':
         train_dataset = datasets.ImageFolder(root=opt.data_folder,

@@ -188,7 +188,7 @@ class SupConResNet(nn.Module):
 
 class SupCEResNet(nn.Module):
     """encoder + classifier"""
-    def __init__(self, name='resnet50', num_classes=10):
+    def __init__(self, name='resnet50', num_classes=92):
         super(SupCEResNet, self).__init__()
         model_fun, dim_in = model_dict[name]
         self.encoder = model_fun()
@@ -200,7 +200,7 @@ class SupCEResNet(nn.Module):
 
 class LinearClassifier(nn.Module):
     """Linear classifier"""
-    def __init__(self, name='resnet50', num_classes=10):
+    def __init__(self, name='resnet50', num_classes=92):
         super(LinearClassifier, self).__init__()
         _, feat_dim = model_dict[name]
         self.fc = nn.Linear(feat_dim, num_classes)
