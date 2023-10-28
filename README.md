@@ -3,20 +3,22 @@
 ## TASKS
 
 ### DONE
-- [x] Preprocessing: calculate mean and std for Z-Score formula.
+- [x] Preprocessing: create training and testing sets, 01RandomSplitDataset.py file.
+- [x] Preprocessing: calculate mean and std for Z-Score formula, 02MeanStdVariables.py file.
 - [x] Added Supervised Contrastive Learning (SCL) repository.
 - [x] Manage error in the \_\_main\_\_ of main_supcon.py to send an email when it breaks.
 - [x] Added DYB-PlanktonNet dataset to main_supcon.py.
 	
 ### TODO next day
-- [] Modify the resnet_big.py accordingly to the number of classes in DYB-PlanktonNet.
-- [] CNN training.
+- [] Learn how to do the inference with this method.
+- [] Employ SEResNeXt as the model instead default ResNest50.
+- [] Peform training with original size of 224 by 224.
 
 ## CNN Model
 
 ### Model training
 
-	python main_supcon.py --batch_size 128 --num_workers 8 --learning_rate 0.2 --lr_decay_epochs 10 --lr_decay_rate 0.0001 --weight_decay 1e-4 --momentum 0.9 --temp 0.07 --cosine
+	python main_supcon.py --batch_size 64 --num_workers 8 --learning_rate 0.2 --lr_decay_epochs 10 --lr_decay_rate 0.0001 --weight_decay 1e-4 --momentum 0.9 --temp 0.07 --cosine --mean "0.0613, 0.0559, 0.0583" --std "0.1215, 0.1185, 0.1019" --data_folder /home/dsosatr/tesis/DYBtrainCropped/ --size 56
 
 ### Reviewing logs after model training
 

@@ -53,7 +53,7 @@ def parse_option():
 
     # model dataset
     parser.add_argument('--model', type=str, default='resnet50')
-    parser.add_argument('--dataset', type=str, default='dyb-planktonnet',
+    parser.add_argument('--dataset', type=str, default='path',
                         choices=['cifar10', 'cifar100', 'dyb-planktonnet', 'path'], help='dataset')
     parser.add_argument('--mean', type=str, help='mean of dataset in path in form of str tuple')
     parser.add_argument('--std', type=str, help='std of dataset in path in form of str tuple')
@@ -140,9 +140,6 @@ def set_loader(opt):
     elif opt.dataset == 'cifar100':
         mean = (0.5071, 0.4867, 0.4408)
         std = (0.2675, 0.2565, 0.2761)
-    elif opt.dataset == 'dyb-planktonnet':
-        mean = (0.0006, 0.0005, 0.0005)
-        std = (0.0011, 0.0011, 0.0010)
     elif opt.dataset == 'path':
         mean = eval(opt.mean)
         std = eval(opt.std)
@@ -175,9 +172,6 @@ def set_loader(opt):
         train_dataset = datasets.CIFAR100(root=opt.data_folder,
                                           transform=TwoCropTransform(train_transform),
                                           download=True)
-    elif opt.dataset == 'dyb-planktonnet':
-        train_dataset = torch.load('../../train_dataset_DYB-PlanktonNet.pth')
-        train_dataset.transform = TwoCropTransform(train_transform)
     elif opt.dataset == 'path':
         train_dataset = datasets.ImageFolder(root=opt.data_folder,
                                             transform=TwoCropTransform(train_transform))
