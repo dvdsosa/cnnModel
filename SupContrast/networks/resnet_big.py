@@ -131,7 +131,8 @@ def resnet18(**kwargs):
 def resnet34(**kwargs):
     return ResNet(BasicBlock, [3, 4, 6, 3], **kwargs)
 
-
+# Bottleneck is a more complex type of residual block used in 
+# larger ResNet architectures like ResNet-50, ResNet-101, and ResNet-152.
 def resnet50(**kwargs):
     return ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
 
@@ -188,7 +189,7 @@ class SupConResNet(nn.Module):
 
 class SupCEResNet(nn.Module):
     """encoder + classifier"""
-    def __init__(self, name='resnet50', num_classes=92):
+    def __init__(self, name='resnet50', num_classes=10):
         super(SupCEResNet, self).__init__()
         model_fun, dim_in = model_dict[name]
         self.encoder = model_fun()
@@ -200,10 +201,20 @@ class SupCEResNet(nn.Module):
 
 class LinearClassifier(nn.Module):
     """Linear classifier"""
-    def __init__(self, name='resnet50', num_classes=92):
+    def __init__(self, name='resnet50', num_classes=10):
         super(LinearClassifier, self).__init__()
         _, feat_dim = model_dict[name]
         self.fc = nn.Linear(feat_dim, num_classes)
 
     def forward(self, features):
         return self.fc(features)
+
+class FeatureExtractor(nn.Module):
+    """backbone only"""
+    def __init__(self, name='resnet50'):
+        super(FeatureExtractor, self).__init__()
+        model_fun, _ = model_dict[name]
+        self.encoder = model_fun()
+
+    def forward(self, x):
+        return self.encoder(x)

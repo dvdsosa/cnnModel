@@ -10,6 +10,8 @@
 - [x] Added DYB-PlanktonNet dataset to main_supcon.py.
 	
 ### TODO next day
+- [] Save the dataset features into a SQL database.
+- [] Prune the dataset features according to Yang et al. paper supplementary material.
 - [] Learn how to do the inference with this method.
 - [] Employ SEResNeXt as the model instead default ResNest50.
 - [] Peform training with original size of 224 by 224.
@@ -30,9 +32,39 @@ Please note that when using a pre-trained CNN as a feature extractor, it's impor
 
 I hope this clarifies how to proceed when using a CNN as a feature extractor! Let me know if you have any further questions.
 
+## Backbone vs Projection head
+
+In the context of a Convolutional Neural Network (CNN), the terms "backbone" and "projection head" refer to different parts of the network that have specific roles.
+
+1. **Backbone**: The backbone is the main part of the CNN that is responsible for extracting features from the input data. It is typically composed of several layers of convolutions, pooling, and non-linear activations. The backbone transforms the raw input data (like an image) into a high-dimensional feature representation. This feature representation captures the essential characteristics of the input data that are relevant for the task at hand (like image classification or object detection).
+
+2. **Projection Head**: The projection head is a component that is added to the end of the backbone. Its role is to map the high-dimensional feature representation produced by the backbone to a lower-dimensional space. The projection head is typically a small neural network itself, often composed of one or more fully connected layers. The purpose of the projection head is to make the feature representation more suitable for the downstream task. For example, in contrastive learning, the projection head maps the features to a space where similar images are close together and dissimilar images are far apart.
+
+Here's a simplified diagram of a CNN with a backbone and projection head:
+
+```
+Input Data
+    |
+    V
+[Backbone CNN]
+    |
+    V
+[High-Dimensional Features]
+    |
+    V
+[Projection Head]
+    |
+    V
+[Low-Dimensional Features]
+```
+
+In this diagram, the input data is passed through the backbone CNN to produce high-dimensional features. These features are then passed through the projection head to produce low-dimensional features that are used for the downstream task. I'll try to create a graphical representation of this.
+
 ## Pytorch help
 
 [Pytorch Transforms](https://pytorch.org/vision/main/auto_examples/transforms/plot_transforms_illustrations.html)
+
+[TRANSFORMING AND AUGMENTING IMAGES](https://pytorch.org/vision/main/transforms.html)
 
 [Astronaut gallery example from above documentation](https://github.com/pytorch/vision/tree/main/gallery/)
 
