@@ -3,13 +3,13 @@ import sqlite3
 from io import BytesIO
 
 # Connect to the SQLite database
-conn = sqlite3.connect('test_database.db')
+conn = sqlite3.connect('image_features.db')
 
 # Create a cursor object
 c = conn.cursor()
 
 # Retrieve data
-c.execute("SELECT vector FROM features WHERE image_id = ?", (1,))
+c.execute("SELECT tensor FROM features WHERE image_id = ?", (1,))
 row = c.fetchone()
 
 if row is not None:

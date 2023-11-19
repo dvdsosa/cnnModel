@@ -10,7 +10,8 @@
 - [x] Added DYB-PlanktonNet dataset to main_supcon.py.
 	
 ### TODO next day
-- [] Save the dataset features into a SQL database.
+- [x] Save the training and test set features into a SQL database.
+- [-] Calculate the threshold for the posterior LUT pruning. EN TEST, UNA VEZ QUE SE VEA QUE SE CALCULA, VOLCAR EL TEST-SET COMPLETO A UNA DATABASE Y RE-CALCULAR EL THRESHOLD, PUEDE LLEVAR 1 SEMANA DE CÁLCULO EN CPU.
 - [] Prune the dataset features according to Yang et al. paper supplementary material.
 - [] Learn how to do the inference with this method.
 - [] Employ SEResNeXt as the model instead default ResNest50.
