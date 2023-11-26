@@ -25,8 +25,10 @@ to decide which approach is better. Remember that what works best can
 vary depending on the specific task and dataset.
 """
 import os
+import numpy as np
+from sklearn.model_selection import StratifiedShuffleSplit
+from torch.utils.data import Subset
 from torchvision import datasets, transforms
-from torch.utils.data import Subset, random_split
 import torchvision.transforms.functional as TF
 from tqdm import tqdm
 
@@ -78,24 +80,24 @@ transform2 = transforms.Compose([
 dataset1 = datasets.ImageFolder(root='/home/dsosatr/tesis/DYB-PlanktonNet', transform=transform1)
 dataset2 = datasets.ImageFolder(root='/home/dsosatr/tesis/DYB-PlanktonNet', transform=transform2)
 
-# Split the dataset into training and testing sets
-train_size = int(0.8 * len(dataset1))  # 80% for training
-test_size = len(dataset1) - train_size  # 20% for testing
+# Get the labels of the dataset
+labels = np.array([item[1] for item in dataset1.imgs])
 
-train_dataset1, test_dataset1 = random_split(dataset1, [train_size, test_size])
-train_dataset2, test_dataset2 = random_split(dataset2, [train_size, test_size])
+# Create a StratifiedShuffleSplit object
+sss = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=0)
 
-# Create a subset of the training and testing sets
-train_subset1 = Subset(dataset1, train_dataset1.indices)
-test_subset1 = Subset(dataset1, test_dataset1.indices)
+# Get the indices for the training and testing sets
+train_index, test_index = next(sss.split(labels, labels))
 
-train_subset2 = Subset(dataset2, train_dataset2.indices)
-test_subset2 = Subset(dataset2, test_dataset2.indices)
-
-# Save images from train_subset and test_subset in a new folder
-save_images(train_subset1, '/home/dsosatr/tesis/DYBtrainCropped')
-save_images(test_subset1, '/home/dsosatr/tesis/DYBtestCropped')
+train_dataset1 = Subset(dataset1, train_index)
+test_dataset1 = Subset(dataset1, test_index)
+train_dataset2 = Subset(dataset2, train_index)
+test_dataset2 = Subset(dataset2, test_index)
 
 # Save images from train_subset and test_subset in a new folder
-save_images(train_subset2, '/home/dsosatr/tesis/DYBtrainPadded')
-save_images(test_subset2, '/home/dsosatr/tesis/DYBtestPadded')
+save_images(train_dataset1, '/home/dsosatr/tesis/DYBtrainCropped')
+save_images(test_dataset1, '/home/dsosatr/tesis/DYBtestCropped')
+
+# Save images from train_subset and test_subset in a new folder
+save_images(train_dataset2, '/home/dsosatr/tesis/DYBtrainPadded')
+save_images(test_dataset2, '/home/dsosatr/tesis/DYBtestPadded')
