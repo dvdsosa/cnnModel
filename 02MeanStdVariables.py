@@ -15,7 +15,7 @@ from tqdm import tqdm
 path_to_images = '/home/dsosatr/tesis/DYBtrainCropped'
 transform = transforms.Compose([transforms.ToTensor()])
 dataset = datasets.ImageFolder(root=path_to_images, transform=transform)
-loader = DataLoader(dataset, batch_size=1, num_workers=0, shuffle=False)
+loader = DataLoader(dataset, batch_size=1, num_workers=1, shuffle=False)
 
 # Method 1
 # Initialize lists to store the mean and std values
@@ -56,3 +56,9 @@ print(f'Method 2:\n Mean: {total_mean}, Std: {total_std}, Total pixels: {count}'
 # /home/dsosatr/tesis/DYBtrainCropped
 # Method 2:
 # Mean: tensor([0.0613, 0.0559, 0.0583]), Std: tensor([0.1330, 0.1289, 0.1111]), Total pixels: 1903426560
+
+# Mean and Std values for DYBtrainCropped with 5 classes removed.
+# Method 1:
+#  Mean value: tensor([0.0613, 0.0559, 0.0583]), Std value: tensor([0.1217, 0.1186, 0.1019])
+# Method 2:
+#  Mean: tensor([0.0613, 0.0559, 0.0583]), Std: tensor([0.1332, 0.1291, 0.1111]), Total pixels: 1902121984
