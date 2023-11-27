@@ -10,8 +10,10 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/SupContrast",
+            "_cwd": "${workspaceFolder}/pytorch-image-models",
             "justMyCode": true,
-        }
+            "args": ["--batch_size", "8", "--num_workers", "8", "--learning_rate", "0.2", "--lr_decay_epochs", "10", "--lr_decay_rate", "0.0001", "--weight_decay", "1e-4", "--momentum", "0.9", "--temp", "0.07", "--cosine"],
+            "_args": ["--data-dir", "/home/dsosatr/tesis", "--train-split", "DYBtrainCropped", "--val-split", "DYBtestCropped", "--model", "seresnext50_32x4d", "--pretrained", "true", "-b", "64", "--workers", "4", "--lr", "0.2", "--warmup-lr", "0", "--warmup-epochs", "10", "--min-lr", "0.0001", "--epochs", "240", "--sched", "cosine", "--opt", "sgd", "--momentum", "0.9", "--amp"]        }
     ]
 }

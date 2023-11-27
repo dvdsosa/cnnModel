@@ -9,12 +9,13 @@ import math
 import tensorboard_logger as tb_logger
 import torch
 import torch.backends.cudnn as cudnn
+import matplotlib.pyplot as plt
 from torchvision import transforms, datasets
 
 from util import TwoCropTransform, AverageMeter
 from util import adjust_learning_rate, warmup_learning_rate
 from util import set_optimizer, save_model
-from networks.resnet_big import SupConResNet
+from networks.resnet_big import SupConResNet, SupConSeResNext
 from losses import SupConLoss
 
 from email_me import NotifyUser
@@ -22,8 +23,11 @@ from email_me import NotifyUser
 try:
     import apex
     from apex import amp, optimizers
+    print("APEX is available.")
 except ImportError:
+    print("APEX is not available.")
     pass
+#    sys.exit()
 
 def parse_option():
     parser = argparse.ArgumentParser('argument for training')
@@ -52,8 +56,8 @@ def parse_option():
                         help='momentum')
 
     # model dataset
-    parser.add_argument('--model', type=str, default='resnet50')
-    parser.add_argument('--dataset', type=str, default='path',
+    parser.add_argument('--model', type=str, default='seresnext50')
+    parser.add_argument('--dataset', type=str, default='cifar10',
                         choices=['cifar10', 'cifar100', 'dyb-planktonnet', 'path'], help='dataset')
     parser.add_argument('--mean', type=str, help='mean of dataset in path in form of str tuple')
     parser.add_argument('--std', type=str, help='std of dataset in path in form of str tuple')
@@ -88,7 +92,7 @@ def parse_option():
 
     # set the path according to the environment
     if opt.data_folder is None:
-        opt.data_folder = './datasets/'
+        opt.data_folder = './datasets'
     opt.model_path = './save/SupCon/{}_models'.format(opt.dataset)
     opt.tb_path = './save/SupCon/{}_tensorboard'.format(opt.dataset)
 
@@ -187,7 +191,7 @@ def set_loader(opt):
 
 
 def set_model(opt):
-    model = SupConResNet(name=opt.model)
+    model = SupConSeResNext(name=opt.model)
     criterion = SupConLoss(temperature=opt.temp)
 
     # enable synchronized Batch Normalization
@@ -215,6 +219,25 @@ def train(train_loader, model, criterion, optimizer, epoch, opt):
     end = time.time()
     for idx, (images, labels) in enumerate(train_loader):
         data_time.update(time.time() - end)
+
+        # Iterate over the first 8 pairs of images of the current batch
+        # for ii in range(len(images[0])):
+        #     # Display the first image in the pair
+        #     plt.figure(figsize=(5, 5))
+        #     plt.subplot(1, 2, 1)
+        #     # Assuming `img_tensor` is your image tensor
+        #     # Convert the PyTorch tensor to a PIL Image
+        #     img = transforms.ToPILImage()(images[0][ii])
+        #     plt.imshow(img)
+        #     plt.title('First image in pair')
+
+        #     # Display the second image in the pair
+        #     plt.subplot(1, 2, 2)
+        #     img = transforms.ToPILImage()(images[1][ii])
+        #     plt.imshow(img)
+        #     plt.title('Second image in pair')
+
+        #     plt.show()
 
         images = torch.cat([images[0], images[1]], dim=0)
         if torch.cuda.is_available():

@@ -18,18 +18,29 @@
 
 ### Model training
 
-	python main_supcon.py --batch_size 64 --num_workers 8 --learning_rate 0.2 --lr_decay_epochs 10 --lr_decay_rate 0.0001 --weight_decay 1e-4 --momentum 0.9 --temp 0.07 --cosine --mean "0.0613, 0.0559, 0.0583" --std "0.1215, 0.1185, 0.1019" --data_folder /home/dsosatr/tesis/DYBtrainPadded/ --size 56
+	python main_supcon.py --batch_size 16 --num_workers 8 --learning_rate 0.2 --lr_decay_epochs 10 --lr_decay_rate 0.0001 --momentum 0.9 --temp 0.07 --cosine --mean "0.0613, 0.0559, 0.0583" --std "0.1215, 0.1185, 0.1019" --dataset path --data_folder /home/dsosatr/tesis/DYBtrainCropped/ --size 224
 
 ### Elapsed time by type of training
+
+TEST DYBtrainCropped
+
 	--batch_size 128, --size 32, --data_folder DYBtrainCropped, 1days 16hours. erased.
-	--batch_size 64, --size 56, --data_folder DYBtrainCropped, 4days 2hours. /home/dsosatr/tesis/cnnmodel/SupContrast/save/SupCon/path_tensorboard/SupCon_path_resnet50_lr_0.2_decay_0.0001_bsz_64_temp_0.07_trial_0_cosine_warm
-	--batch_size 64, --size 56, --data_folder DYBtrainPadded, por hacer
+	--batch_size 64, --size 56, --data_folder DYBtrainCropped, 4days 2hours. finished
+	above stored on --> SupCon_path_resnet50_lr_0.2_decay_0.0001_bsz_64_temp_0.07_trial_0_cosine_warm
+	--batch_size 16, --size 224, --data_folder DYBtrainCropped
+
+TEST CIFAR10
+
+	python main_supcon.py --batch_size 64 --num_workers 8 --learning_rate 0.2 --lr_decay_epochs 10 --lr_decay_rate 0.0001 --momentum 0.9 --temp 0.07 --cosine
+	Script execution completed! Elapsed time: 1 days 19 hours
 
 ### Reviewing logs after model training
 
 In terminal, change path to where the log file exists, then:
 
 	tensorboard --logdir=.
+
+If getting an error when training the model about "tensorflow not installed" derived from tensorboard, just "pip-autoremove tensorboard_logger -y" and then "pip install tensorboard-logger"
 
 ## Git repository
 Syncing local folder with remote repository:

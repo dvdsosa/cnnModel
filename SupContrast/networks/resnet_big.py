@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from timm import create_model
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -113,7 +114,7 @@ class ResNet(nn.Module):
             self.in_planes = planes * block.expansion
         return nn.Sequential(*layers)
 
-    def forward(self, x, layer=100):
+    def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))
         out = self.layer1(out)
         out = self.layer2(out)
@@ -123,10 +124,11 @@ class ResNet(nn.Module):
         out = torch.flatten(out, 1)
         return out
 
+def _create_resnet(variant, pretrained: bool = True, **kwargs) -> ResNet:
+    return build_model_with_cfg(ResNet, variant, pretrained, **kwargs)
 
 def resnet18(**kwargs):
     return ResNet(BasicBlock, [2, 2, 2, 2], **kwargs)
-
 
 def resnet34(**kwargs):
     return ResNet(BasicBlock, [3, 4, 6, 3], **kwargs)
@@ -136,16 +138,23 @@ def resnet34(**kwargs):
 def resnet50(**kwargs):
     return ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
 
-
 def resnet101(**kwargs):
     return ResNet(Bottleneck, [3, 4, 23, 3], **kwargs)
 
+def seresnext50_32x4d(pretrained: bool = False, **kwargs) -> ResNet:
+    # Load the pretrained weights
+    model = create_model('seresnext50_32x4d', pretrained=True, in_chans=3, global_pool='avg')
+    # Remove the final layer (head) to keep only the backbone
+    backbone = nn.Sequential(*list(model.children())[:-1])
+
+    return backbone
 
 model_dict = {
     'resnet18': [resnet18, 512],
     'resnet34': [resnet34, 512],
     'resnet50': [resnet50, 2048],
     'resnet101': [resnet101, 2048],
+    'seresnext50': [seresnext50_32x4d, 2048],
 }
 
 
@@ -186,6 +195,28 @@ class SupConResNet(nn.Module):
         feat = F.normalize(self.head(feat), dim=1)
         return feat
 
+class SupConSeResNext(nn.Module):
+    """backbone + projection head, seresnext50_32x4d.gluon_in1k"""
+    def __init__(self, name='seresnext50', head='mlp', feat_dim=128):
+        super(SupConSeResNext, self).__init__()
+        model_fun, dim_in = model_dict[name]
+        self.encoder = model_fun()
+        if head == 'linear':
+            self.head = nn.Linear(dim_in, feat_dim)
+        elif head == 'mlp':
+            self.head = nn.Sequential(
+                nn.Linear(dim_in, dim_in),
+                nn.ReLU(inplace=True),
+                nn.Linear(dim_in, feat_dim)
+            )
+        else:
+            raise NotImplementedError(
+                'head not supported: {}'.format(head))
+
+    def forward(self, x):
+        feat = self.encoder(x)
+        feat = F.normalize(self.head(feat), dim=1)
+        return feat
 
 class SupCEResNet(nn.Module):
     """encoder + classifier"""
