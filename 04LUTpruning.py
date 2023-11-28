@@ -42,7 +42,7 @@ def lookup_table_pruning(lookup_table, classes, id, similarity_threshold):
     # conn.close()
 
 # Connect to the SQLite database
-conn = sqlite3.connect('trainingSet.db')
+conn = sqlite3.connect('trainingSetNew.db')
 # Create a cursor object
 c = conn.cursor()
 # Retrieve data

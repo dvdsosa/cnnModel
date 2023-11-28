@@ -27,7 +27,6 @@ try:
 except ImportError:
     print("APEX is not available.")
     pass
-#    sys.exit()
 
 def parse_option():
     parser = argparse.ArgumentParser('argument for training')

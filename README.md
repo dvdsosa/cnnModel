@@ -40,7 +40,7 @@ In terminal, change path to where the log file exists, then:
 
 	tensorboard --logdir=.
 
-If getting an error when training the model about "tensorflow not installed" derived from tensorboard, just "pip-autoremove tensorboard_logger -y" and then "pip install tensorboard-logger"
+If getting an error when training the model about "tensorflow not installed" derived from tensorboard, just "pip uninstall tensorflow" and then reinstall tensorboard-logger.
 
 ## Git repository
 Syncing local folder with remote repository:

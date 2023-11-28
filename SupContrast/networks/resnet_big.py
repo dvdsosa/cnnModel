@@ -124,8 +124,6 @@ class ResNet(nn.Module):
         out = torch.flatten(out, 1)
         return out
 
-def _create_resnet(variant, pretrained: bool = True, **kwargs) -> ResNet:
-    return build_model_with_cfg(ResNet, variant, pretrained, **kwargs)
 
 def resnet18(**kwargs):
     return ResNet(BasicBlock, [2, 2, 2, 2], **kwargs)
@@ -142,8 +140,8 @@ def resnet101(**kwargs):
     return ResNet(Bottleneck, [3, 4, 23, 3], **kwargs)
 
 def seresnext50_32x4d(pretrained: bool = False, **kwargs) -> ResNet:
-    # Load the pretrained weights
-    model = create_model('seresnext50_32x4d', pretrained=True, in_chans=3, global_pool='avg')
+    # Load the pretrained model
+    model = create_model('seresnext50_32x4d', pretrained=True)
     # Remove the final layer (head) to keep only the backbone
     backbone = nn.Sequential(*list(model.children())[:-1])
 
