@@ -1,10 +1,12 @@
 from __future__ import print_function
 
+import os
 import sys
 import argparse
 import time
 import math
 
+import tensorboard_logger as tb_logger
 import torch
 import torch.backends.cudnn as cudnn
 
@@ -14,12 +16,15 @@ from util import adjust_learning_rate, warmup_learning_rate, accuracy
 from util import set_optimizer
 from networks.resnet_big import SupConResNet, LinearClassifier
 
+from email_me import NotifyUser
+
 try:
     import apex
     from apex import amp, optimizers
+    print("APEX is available.")
 except ImportError:
+    print("APEX is not available.")
     pass
-
 
 def parse_option():
     parser = argparse.ArgumentParser('argument for training')
@@ -32,7 +37,7 @@ def parse_option():
                         help='batch_size')
     parser.add_argument('--num_workers', type=int, default=16,
                         help='num of workers to use')
-    parser.add_argument('--epochs', type=int, default=100,
+    parser.add_argument('--epochs', type=int, default=2000,
                         help='number of training epochs')
 
     # optimization
@@ -49,7 +54,7 @@ def parse_option():
 
     # model dataset
     parser.add_argument('--model', type=str, default='resnet50')
-    parser.add_argument('--dataset', type=str, default='cifar10',
+    parser.add_argument('--dataset', type=str, default='cifar100',
                         choices=['cifar10', 'cifar100'], help='dataset')
 
     # other setting
@@ -74,6 +79,7 @@ def parse_option():
     opt.model_name = '{}_{}_lr_{}_decay_{}_bsz_{}'.\
         format(opt.dataset, opt.model, opt.learning_rate, opt.weight_decay,
                opt.batch_size)
+    opt.tb_path = './save/Linear/{}_tensorboard'.format(opt.dataset)
 
     if opt.cosine:
         opt.model_name = '{}_cosine'.format(opt.model_name)
@@ -81,7 +87,7 @@ def parse_option():
     # warm-up for large-batch training,
     if opt.warm:
         opt.model_name = '{}_warm'.format(opt.model_name)
-        opt.warmup_from = 0.01
+        opt.warmup_from = 0
         opt.warm_epochs = 10
         if opt.cosine:
             eta_min = opt.learning_rate * (opt.lr_decay_rate ** 3)
@@ -89,6 +95,10 @@ def parse_option():
                     1 + math.cos(math.pi * opt.warm_epochs / opt.epochs)) / 2
         else:
             opt.warmup_to = opt.learning_rate
+
+    opt.tb_folder = os.path.join(opt.tb_path, opt.model_name)
+    if not os.path.isdir(opt.tb_folder):
+        os.makedirs(opt.tb_folder)
 
     if opt.dataset == 'cifar10':
         opt.n_cls = 10
@@ -239,6 +249,9 @@ def main():
     # build optimizer
     optimizer = set_optimizer(opt, classifier)
 
+    # tensorboard
+    logger = tb_logger.Logger(logdir=opt.tb_folder, flush_secs=10)
+
     # training routine
     for epoch in range(1, opt.epochs + 1):
         adjust_learning_rate(opt, optimizer, epoch)
@@ -253,6 +266,11 @@ def main():
 
         # eval for one epoch
         loss, val_acc = validate(val_loader, model, classifier, criterion, opt)
+
+        # tensorboard logger
+        logger.log_value('train_acc', acc, epoch)
+        logger.log_value('val_acc', val_acc, epoch)
+
         if val_acc > best_acc:
             best_acc = val_acc
 
@@ -260,4 +278,27 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    notify_me = NotifyUser()
+
+    try:
+        start_time = time.time()
+        
+        main()
+
+        end_time = time.time()
+
+        # send notification email
+        elapsed_time = end_time - start_time
+        # Convert elapsed_time to days and hours format
+        elapsed_days = int(elapsed_time // (24 * 3600))
+        elapsed_hours = int((elapsed_time % (24 * 3600)) // 3600)
+        message = f'Script execution completed!\n' \
+          f'Elapsed time: {elapsed_days} days {elapsed_hours} hours\n'
+        notify_me(message)
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        # Add the code you want to execute when main() fails here
+        message = f'Script execution failed!\n ' \
+            f'Error: {e}'
+        notify_me(message)
