@@ -8,7 +8,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from timm import create_model
+import timm
+import torchvision.models as models
 
 class BasicBlock(nn.Module):
     expansion = 1
@@ -81,6 +82,7 @@ class ResNet(nn.Module):
         self.conv1 = nn.Conv2d(in_channel, 64, kernel_size=3, stride=1, padding=1,
                                bias=False)
         self.bn1 = nn.BatchNorm2d(64)
+        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         self.layer1 = self._make_layer(block, 64, num_blocks[0], stride=1)
         self.layer2 = self._make_layer(block, 128, num_blocks[1], stride=2)
         self.layer3 = self._make_layer(block, 256, num_blocks[2], stride=2)
@@ -116,6 +118,7 @@ class ResNet(nn.Module):
 
     def forward(self, x):
         out = F.relu(self.bn1(self.conv1(x)))
+        out = self.maxpool(out)  # Apply Max Pool here
         out = self.layer1(out)
         out = self.layer2(out)
         out = self.layer3(out)
@@ -139,22 +142,72 @@ def resnet50(**kwargs):
 def resnet101(**kwargs):
     return ResNet(Bottleneck, [3, 4, 23, 3], **kwargs)
 
-def seresnext50_32x4d(pretrained: bool = False, **kwargs) -> ResNet:
-    # Load the pretrained model
-    model = create_model('seresnext50_32x4d', pretrained=True)
-    # Remove the final layer (head) to keep only the backbone
-    backbone = nn.Sequential(*list(model.children())[:-1])
+# Custom models for CIFAR data:
+# the torchvision ResNet uses a kernel size of 7 for the 
+# first conv layer. It has drastically lowered the dimension 
+# (i.e., H and W) of your feature maps. For CIFAR-10 or 100, 
+# such large kernel is not suitable as the input image is just 32x32.
+# source: https://github.com/HobbitLong/SupContrast/issues/132
+def seresnext50timmCIFAR() -> ResNet:
+    # Load the model
+    model = timm.create_model('seresnext50_32x4d', pretrained=False, num_classes=0)
+    # Change the first convolutional layer
+    model.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
+    # Remove the MaxPool2d layer
+    model.maxpool = nn.Identity()
 
-    return backbone
+    return model
+
+def resnet50timmCIFAR() -> ResNet:
+    # Load the original ResNet50 model
+    model = timm.create_model('resnet50', pretrained=False, num_classes=0)
+    # Change the first convolutional layer
+    model.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
+    return model
+
+def resnet50timmCIFARnoMaxpool() -> ResNet:
+    # Load the original ResNet50 model
+    model = timm.create_model('resnet50', pretrained=False, num_classes=0)
+    # Change the first convolutional layer
+    model.conv1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
+    # Remove the MaxPool2d layer
+    model.maxpool = nn.Identity()
+    
+    return model
+
+def seresnext50timm() -> ResNet:
+    model = timm.create_model('seresnext50_32x4d', pretrained=False, num_classes=0)
+    return model
+
+def resnet50timm() -> ResNet:
+    # Load the original ResNet50 model
+    model = timm.create_model('resnet50', pretrained=False, num_classes=0)
+    return model
+
+def resnet50pytorchCIFAR() -> ResNet:
+    # Load the original ResNet50 model
+    model = models.resnet50(weights=None)
+    # Change the first layer
+    model.conv1 = torch.nn.Conv2d(3, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+    # Remove the last layer
+    modules = list(model.children())[:-1] # remove the last layer
+    modules.append(nn.Flatten())  # Add the flattening layer to avoid the [256, 2048, 1, 1] output
+    model = torch.nn.Sequential(*modules)
+
+    return model
 
 model_dict = {
     'resnet18': [resnet18, 512],
     'resnet34': [resnet34, 512],
     'resnet50': [resnet50, 2048],
     'resnet101': [resnet101, 2048],
-    'seresnext50': [seresnext50_32x4d, 2048],
+    'seresnext50timmCIFAR': [seresnext50timmCIFAR, 2048],
+    'resnet50timmCIFAR': [resnet50timmCIFAR, 2048],
+    'resnet50timmCIFARnoMaxpool': [resnet50timmCIFARnoMaxpool, 2048],
+    'seresnext50timm': [seresnext50timm, 2048],
+    'resnet50timm': [resnet50timm, 2048],
+    'resnet50pytorchCIFAR': [resnet50pytorchCIFAR, 2048],
 }
-
 
 class LinearBatchNorm(nn.Module):
     """Implements BatchNorm1d by BatchNorm2d, for SyncBN purpose"""
@@ -168,7 +221,6 @@ class LinearBatchNorm(nn.Module):
         x = self.bn(x)
         x = x.view(-1, self.dim)
         return x
-
 
 class SupConResNet(nn.Module):
     """backbone + projection head"""
@@ -192,29 +244,27 @@ class SupConResNet(nn.Module):
         feat = self.encoder(x)
         feat = F.normalize(self.head(feat), dim=1)
         return feat
+    
+# The model `seresnext50_32x4d.gluon_in1k` is a variant of the SE-ResNeXt-B image 
+# classification model with Squeeze-and-Excitation channel attention⁶. This model 
+# was trained on the ImageNet-1K dataset using the Gluon framework⁶. 
 
-class SupConSeResNext(nn.Module):
-    """backbone + projection head, seresnext50_32x4d.gluon_in1k"""
-    def __init__(self, name='seresnext50', head='mlp', feat_dim=128):
-        super(SupConSeResNext, self).__init__()
-        model_fun, dim_in = model_dict[name]
-        self.encoder = model_fun()
-        if head == 'linear':
-            self.head = nn.Linear(dim_in, feat_dim)
-        elif head == 'mlp':
-            self.head = nn.Sequential(
-                nn.Linear(dim_in, dim_in),
-                nn.ReLU(inplace=True),
-                nn.Linear(dim_in, feat_dim)
-            )
-        else:
-            raise NotImplementedError(
-                'head not supported: {}'.format(head))
+# Here are some features of this model⁶:
+# - ReLU activations
+# - Single layer 7x7 convolution with pooling
+# - 1x1 convolution shortcut downsample
+# - Grouped 3x3 bottleneck convolutions
+# - Squeeze-and-Excitation channel attention
 
-    def forward(self, x):
-        feat = self.encoder(x)
-        feat = F.normalize(self.head(feat), dim=1)
-        return feat
+# The Squeeze-and-Excitation (SE) mechanism enables the network to perform dynamic 
+# channel-wise feature recalibration¹⁶. The '32x4d' in the name refers to the 
+# cardinality and the number of channels in each group convolution¹.
+
+# The specific pre-trained weights for the `seresnext50_32x4d.gluon_in1k` model 
+# can be downloaded from the provided URL⁶. As always, the performance of the model 
+# can depend on the specific task and dataset you are working with. It's often a 
+#     good idea to experiment with different pre-trained models to see which one 
+#     works best for your specific use case.
 
 class SupCEResNet(nn.Module):
     """encoder + classifier"""
@@ -226,7 +276,6 @@ class SupCEResNet(nn.Module):
 
     def forward(self, x):
         return self.fc(self.encoder(x))
-
 
 class LinearClassifier(nn.Module):
     """Linear classifier"""

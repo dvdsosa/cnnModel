@@ -35,9 +35,9 @@ def parse_option():
                         help='save frequency')
     parser.add_argument('--batch_size', type=int, default=256,
                         help='batch_size')
-    parser.add_argument('--num_workers', type=int, default=16,
+    parser.add_argument('--num_workers', type=int, default=8,
                         help='num of workers to use')
-    parser.add_argument('--epochs', type=int, default=2000,
+    parser.add_argument('--epochs', type=int, default=100,
                         help='number of training epochs')
 
     # optimization
@@ -54,8 +54,13 @@ def parse_option():
 
     # model dataset
     parser.add_argument('--model', type=str, default='resnet50')
-    parser.add_argument('--dataset', type=str, default='cifar100',
-                        choices=['cifar10', 'cifar100'], help='dataset')
+    parser.add_argument('--dataset', type=str, default='cifar10',
+                        choices=['cifar10', 'cifar100', 'path'], help='dataset')
+    parser.add_argument('--mean', type=str, help='mean of dataset in path in form of str tuple')
+    parser.add_argument('--std', type=str, help='std of dataset in path in form of str tuple')
+    parser.add_argument('--data_folder', type=str, default=None, help='path to custom train dataset')
+    parser.add_argument('--val_folder', type=str, default=None, help='path to custom load dataset')
+    parser.add_argument('--size', type=int, default=32, help='parameter for RandomResizedCrop')
 
     # other setting
     parser.add_argument('--cosine', action='store_true',
@@ -68,8 +73,15 @@ def parse_option():
 
     opt = parser.parse_args()
 
+    # check if dataset is path that passed required arguments
+    if opt.dataset == 'path':
+        assert opt.data_folder is not None \
+            and opt.mean is not None \
+            and opt.std is not None
+
     # set the path according to the environment
-    opt.data_folder = './datasets/'
+    if opt.data_folder is None:
+        opt.data_folder = './datasets'
 
     iterations = opt.lr_decay_epochs.split(',')
     opt.lr_decay_epochs = list([])
@@ -104,6 +116,8 @@ def parse_option():
         opt.n_cls = 10
     elif opt.dataset == 'cifar100':
         opt.n_cls = 100
+    elif opt.dataset == 'path':
+        opt.n_cls = 87
     else:
         raise ValueError('dataset not supported: {}'.format(opt.dataset))
 
@@ -274,7 +288,10 @@ def main():
         if val_acc > best_acc:
             best_acc = val_acc
 
+    filename = os.path.basename(opt.ckpt)
+
     print('best accuracy: {:.2f}'.format(best_acc))
+    return f'best accuracy at epoch {filename}: {best_acc:.2f}'
 
 
 if __name__ == '__main__':
@@ -283,7 +300,7 @@ if __name__ == '__main__':
     try:
         start_time = time.time()
         
-        main()
+        results = main()
 
         end_time = time.time()
 
@@ -294,6 +311,7 @@ if __name__ == '__main__':
         elapsed_hours = int((elapsed_time % (24 * 3600)) // 3600)
         message = f'Script execution completed!\n' \
           f'Elapsed time: {elapsed_days} days {elapsed_hours} hours\n'
+        message += results
         notify_me(message)
 
     except Exception as e:

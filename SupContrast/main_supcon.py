@@ -9,13 +9,12 @@ import math
 import tensorboard_logger as tb_logger
 import torch
 import torch.backends.cudnn as cudnn
-import matplotlib.pyplot as plt
 from torchvision import transforms, datasets
 
 from util import TwoCropTransform, AverageMeter
 from util import adjust_learning_rate, warmup_learning_rate
 from util import set_optimizer, save_model
-from networks.resnet_big import SupConResNet, SupConSeResNext
+from networks.resnet_big import SupConResNet
 from losses import SupConLoss
 
 from email_me import NotifyUser
@@ -55,8 +54,8 @@ def parse_option():
                         help='momentum')
 
     # model dataset
-    parser.add_argument('--model', type=str, default='seresnext50')
-    parser.add_argument('--dataset', type=str, default='cifar10',
+    parser.add_argument('--model', type=str, default='resnet50timm')
+    parser.add_argument('--dataset', type=str, default='path',
                         choices=['cifar10', 'cifar100', 'dyb-planktonnet', 'path'], help='dataset')
     parser.add_argument('--mean', type=str, help='mean of dataset in path in form of str tuple')
     parser.add_argument('--std', type=str, help='std of dataset in path in form of str tuple')
@@ -190,7 +189,7 @@ def set_loader(opt):
 
 
 def set_model(opt):
-    model = SupConSeResNext(name=opt.model)
+    model = SupConResNet(name=opt.model)
     criterion = SupConLoss(temperature=opt.temp)
 
     # enable synchronized Batch Normalization
