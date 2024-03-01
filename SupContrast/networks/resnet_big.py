@@ -176,12 +176,13 @@ def resnet50timmCIFARnoMaxpool() -> ResNet:
     return model
 
 def seresnext50timm() -> ResNet:
-    model = timm.create_model('seresnext50_32x4d', pretrained=False, num_classes=0)
+    # Load the original Se-ResNext50 model, top-1 accuracy of 81.27% and a top-5 accuracy of 95.62% on the ImageNet validation set
+    model = timm.create_model('seresnext50_32x4d.racm_in1k', pretrained=False, num_classes=0)
     return model
 
 def resnet50timm() -> ResNet:
-    # Load the original ResNet50 model
-    model = timm.create_model('resnet50', pretrained=False, num_classes=0)
+    # Load the original ResNet50 model, top-1 accuracy is approximately 79.53% and the top-5 accuracy is approximately 94.75%.
+    model = timm.create_model('resnet50.b1k_in1k', pretrained=False, num_classes=0)
     return model
 
 def resnet50pytorchCIFAR() -> ResNet:
@@ -244,7 +245,7 @@ class SupConResNet(nn.Module):
         feat = self.encoder(x)
         feat = F.normalize(self.head(feat), dim=1)
         return feat
-    
+
 # The model `seresnext50_32x4d.gluon_in1k` is a variant of the SE-ResNeXt-B image 
 # classification model with Squeeze-and-Excitation channel attention⁶. This model 
 # was trained on the ImageNet-1K dataset using the Gluon framework⁶. 
