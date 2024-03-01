@@ -13,7 +13,7 @@ import torch.backends.cudnn as cudnn
 from main_ce import set_loader
 from util import AverageMeter
 from util import adjust_learning_rate, warmup_learning_rate, accuracy
-from util import set_optimizer
+from util import set_optimizer, save_model
 from networks.resnet_big import SupConResNet, LinearClassifier
 
 from email_me import NotifyUser
@@ -53,7 +53,7 @@ def parse_option():
                         help='momentum')
 
     # model dataset
-    parser.add_argument('--model', type=str, default='resnet50')
+    parser.add_argument('--model', type=str, default='resnet50timm')
     parser.add_argument('--dataset', type=str, default='cifar10',
                         choices=['cifar10', 'cifar100', 'path'], help='dataset')
     parser.add_argument('--mean', type=str, help='mean of dataset in path in form of str tuple')
@@ -91,6 +91,7 @@ def parse_option():
     opt.model_name = '{}_{}_lr_{}_decay_{}_bsz_{}'.\
         format(opt.dataset, opt.model, opt.learning_rate, opt.weight_decay,
                opt.batch_size)
+    opt.model_path = './save/Linear/{}_models'.format(opt.dataset)
     opt.tb_path = './save/Linear/{}_tensorboard'.format(opt.dataset)
 
     if opt.cosine:
@@ -111,6 +112,10 @@ def parse_option():
     opt.tb_folder = os.path.join(opt.tb_path, opt.model_name)
     if not os.path.isdir(opt.tb_folder):
         os.makedirs(opt.tb_folder)
+
+    opt.save_folder = os.path.join(opt.model_path, opt.model_name + "_head")
+    if not os.path.isdir(opt.save_folder):
+        os.makedirs(opt.save_folder)
 
     if opt.dataset == 'cifar10':
         opt.n_cls = 10
@@ -252,6 +257,7 @@ def validate(val_loader, model, classifier, criterion, opt):
 
 def main():
     best_acc = 0
+    best_epoch = 0
     opt = parse_option()
 
     # build data loader
@@ -287,11 +293,15 @@ def main():
 
         if val_acc > best_acc:
             best_acc = val_acc
+            best_epoch = epoch
+            save_file = os.path.join(
+                opt.save_folder, 'ckpt_epoch_{epoch}.pth'.format(epoch=epoch))
+            save_model(classifier, optimizer, opt, epoch, save_file)
 
     filename = os.path.basename(opt.ckpt)
 
-    print('best accuracy: {:.2f}'.format(best_acc))
-    return f'best accuracy at epoch {filename}: {best_acc:.2f}'
+    print('Best accuracy at epoch {} is {:.2f}'.format(best_epoch, best_acc))
+    return f'Best accuracy at epoch {best_epoch}: {best_acc:.2f}'
 
 
 if __name__ == '__main__':
