@@ -139,8 +139,10 @@ def set_loader(opt):
     ])
 
     val_transform = transforms.Compose([
-        transforms.ToTensor(),
-        normalize,
+        transforms.Resize(256),  # Resize the smallest side to 256
+        transforms.CenterCrop(224),  # Crop the center of the image
+        transforms.ToTensor(),  # Convert the image to a tensor
+        normalize  # Normalize the image
     ])
 
     if opt.dataset == 'cifar10':

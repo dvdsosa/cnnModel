@@ -16,10 +16,10 @@ from torch.utils.data import DataLoader
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Instantiate the feature extractor
-feature_extractor = FeatureExtractor(name='resnet50')
+feature_extractor = FeatureExtractor(name='resnet50timm')
 
 # Load the pre-trained weights
-state_load = torch.load('/home/dsosatr/tesis/cnnmodel/SupContrast/save/SupCon/path_models/SupCon_path_resnet50_lr_0.2_decay_0.0001_bsz_64_temp_0.07_trial_0_cosine_warm/ckpt_epoch_1000.pth')
+state_load = torch.load('/home/dsosatr/tesis/cnnmodel/SupContrast/save/SupCon/path_models/SupCon_path_resnet50timm_lr_0.016_decay_0.0001_bsz_32_temp_0.07_trial_0_cosine_warm_falta/ckpt_epoch_850.pth')
 
 ###################################
 # Filter out the keys for the projection head
@@ -57,10 +57,10 @@ feature_extractor.load_state_dict(state_dict, strict=False)
 # Move the feature extractor to the GPU
 feature_extractor.to(device)
 
-# Define the transformation.
+# Define the transformation. 
 transformada = transforms.Compose([
     transforms.ToTensor(), # Convert the image to a tensor
-    transforms.Normalize(mean=[0.0613, 0.0559, 0.0583], std=[0.1215, 0.1185, 0.1019]), # Perform the same normalization as the one used while traiing
+    transforms.Normalize(mean=[0.0419, 0.0355, 0.0410], std=[0.0959, 0.0913, 0.0771]), # Perform the same normalization as the one used while training
 ])
 
 # Connect to the SQLite database

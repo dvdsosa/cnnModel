@@ -99,5 +99,5 @@ save_images(train_dataset1, '/home/dsosatr/tesis/DYBtrainCropped')
 save_images(test_dataset1, '/home/dsosatr/tesis/DYBtestCropped')
 
 # Save images from train_subset and test_subset in a new folder
-save_images(train_dataset2, '/home/dsosatr/tesis/DYBtrainPadded')
-save_images(test_dataset2, '/home/dsosatr/tesis/DYBtestPadded')
+#save_images(train_dataset2, '/home/dsosatr/tesis/DYBtrainPadded')
+#save_images(test_dataset2, '/home/dsosatr/tesis/DYBtestPadded')
