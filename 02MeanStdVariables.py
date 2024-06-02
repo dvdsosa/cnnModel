@@ -12,7 +12,7 @@ import numpy as np
 from tqdm import tqdm
 
 # Assuming your images are stored in 'path_to_images'
-path_to_images = '/home/dsosatr/tesis/DYBtrainCropped'
+path_to_images = '/home/dsosatr/tesis/DYB-original/train'
 transform = transforms.Compose([transforms.ToTensor()])
 dataset = datasets.ImageFolder(root=path_to_images, transform=transform)
 loader = DataLoader(dataset, batch_size=1, num_workers=1, shuffle=False)
@@ -62,3 +62,15 @@ print(f'Method 2:\n Mean: {total_mean}, Std: {total_std}, Total pixels: {count}'
 #  Mean value: tensor([0.0613, 0.0559, 0.0583]), Std value: tensor([0.1217, 0.1186, 0.1019])
 # Method 2:
 #  Mean: tensor([0.0613, 0.0559, 0.0583]), Std: tensor([0.1332, 0.1291, 0.1111]), Total pixels: 1902121984
+
+# Mean and Std values for DYBtrainPadded with 5 classes removed.
+# Method 1:
+# Mean value: tensor([0.0361, 0.0326, 0.0357]), Std value: tensor([0.0906, 0.0882, 0.0774])
+# Method 2:
+#  Mean: tensor([0.0361, 0.0326, 0.0357]), Std: tensor([0.0997, 0.0968, 0.0858]), Total pixels: 1902121984
+
+# Mean and Std values for DYBtrainOriginal with 5 classes removed.
+# Method 1:
+#  Mean value: tensor([0.0504, 0.0440, 0.0491]), Std value: tensor([0.1060, 0.1033, 0.0891])
+# Method 2: used values for my thesis
+# Mean: tensor([0.0419, 0.0355, 0.0410]), Std: tensor([0.0959, 0.0913, 0.0771]), Total pixels: 7588451567  --> ESTE ES EL UTILIZADO
