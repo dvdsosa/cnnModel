@@ -51,6 +51,7 @@ Thumbs.db
 # Model folders
 save/
 ../save
+myenvTesis/
 
 # Databases
 *.db
