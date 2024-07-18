@@ -49,11 +49,10 @@ Thumbs.db
 *.wmv
 
 # Model folders
-save/
-../save
 myenvTesis/
 envTensorboard
 SupContrast/pesos
+SupContrast/save
 
 # Databases
 *.db

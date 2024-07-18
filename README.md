@@ -1,14 +1,5 @@
 # ResNet50 trained with SCL
 
-## Create a new environment:
-```bash
-python3 -m venv myenvTesis
-source myenvTesis/bin/activate
-pip install package_name
-
-source deactivate
-```
-
 ## TASKS
 
 ### DONE
@@ -18,17 +9,102 @@ source deactivate
 - [x] Added notification by email when it ends or breaks.
 - [x] Added DYB-PlanktonNet dataset to main_supcon.py.
 - [x] Added SeResNext50 model to SCL repository.
+- [x] Learn how to do the inference with this method.
+- [x] Calculate performance metrics Acc (top-1), Recall, Precision, F1-Score.
+- [x] Peform training with original size of 224 by 224.
+- [x] Train the backbone with DYB-linearHead dataset (train, val, test folders).
+- [x] Train the backbone with DYB-cosine dataset (train, test folders).
 	
 ### TODO next day
 
+- [] Compare the performance of the backbone trained using SeResNext50 versus ResNet50.
 - [] Perform LUT prunning.
-- [x] Learn how to do the inference with this method.
-- [] Calculate performance metrics Acc (top-1), Recall, Precision, F1-Score.
-- [] Peform training with original size of 224 by 224.
+
 
 ## CNN Model
 
 ### Training
+
+#### Methodology
+
+The backbone training is performend on a fixed number of epochs (1000). Later, we observe the loss decay via tensorboard, and pick the saved epochs where we start seeing a loss' plateau (in our case, from 700 to last). Next, we train a linear head over each one of these epochs while monitoring the validation performance. Thus, we select the weights were the validation accuracy is the highest, and with these weights, we evaluate the performance of the linear head using the testing set.
+
+For DYB-linearHead dataset, **batch size 64**:
+
+1. Backbone training (features extractor). Elapsed training time 3 days, 21 hours.
+- The batch size was set to 64 to maximize the use of the GPU RAM while training, with the goal of minimizing the training time (let's see if this is true, performing now the training with batch size 32, let's see how log it takes...)
+
+```bash
+python main_supcon.py --batch_size 64 --num_workers 8 --learning_rate 0.016 --lr_decay_epochs 10 --temp 0.07 --cosine --mean "0.0418, 0.0353, 0.0409" --std "0.0956, 0.0911, 0.0769" --dataset path --data_folder /home/dsosatr/tesis/DYB-linearHead/train/ --size 224
+```
+
+2. Head training (classifier). It is necessary to iterate over every backbone weights (in our case we iterate from epoch 700 to last):
+
+```bash
+./main_linear_loop.sh
+```
+
+---
+
+For DYB-linearHead dataset, **batch size 32**:
+
+1. Backbone training (features extractor). Elapsed training time x days, x hours.
+- The learning rate of 0.016 was selected as a linear relation between the original batch size of 1024 and learning rate of 0.5; thus dividing 0.5/32 = 0.0156 rounded to 0.016. 
+
+```bash
+python main_supcon.py --batch_size 32 --num_workers 8 --learning_rate 0.016 --lr_decay_epochs 10 --temp 0.07 --cosine --mean "0.0418, 0.0353, 0.0409" --std "0.0956, 0.0911, 0.0769" --dataset path --data_folder /home/dsosatr/tesis/DYB-linearHead/train/ --size 224
+```
+
+--- 
+
+For DYB-cosine dataset, **batch size 32**:
+
+1. Backbone training (features extractor):
+```bash
+python main_supcon.py --batch_size 32 --num_workers 8 --learning_rate 0.016 --lr_decay_epochs 10 --temp 0.07 --cosine --mean "0.0419, 0.0355, 0.0410" --std "0.0959, 0.0913, 0.0771" --dataset path --data_folder /home/dsosatr/tesis/DYB-original/train/ --size 224
+```
+
+#### Results
+
+Resnet50timm, batch_size = 64, learning_rate = 0.016, dataset DYB-linearHead, head trained using the frozen backbone on epoch 800 and validated with the DYB-original/val folder. 17 jul 2024 20:03.
+
+| ckpt number | accuracy | epoch |
+| ----------- | -------- | ----- |
+| last.pth    | 95.10%   | 61    |
+| 1000.pth    | 95.02%   | 61    |
+| 950.pth     | 95.03%   | 51    |
+| 900.pth     | 94.89%   | 53    |
+| 850.pth     | 94.88%   | 66    |
+| 800.pth     | 95.17%   | 49    |
+| 750.pth     | 94.64%   | 70    |
+| 700.pth     | 94.64%   | 21    |
+
+Finally, we test the accuracy of the backbone epoch 800 weights, and the head epoch 800 weights, with the DYB-original/test dataset.
+
+| Accuracy | Precision | Recall | F1 Score |
+| -------- | --------- | ------ | -------- |
+| 94.86%   | 93.65%    | 90.26% | 91.43%   |
+
+### Notes regarding training
+
+[It is quite common for images with low resolution (e.g. 32x32 for CIFAR-10). In order to keep more spatial information before the average pool operator, the max pooling layer is removed. Notice that the filter-, stride- and padding size in the first convolution layer are also different from the conventional implementation. Again, this is to better preserve spatial information.](https://github.com/wvangansbeke/Unsupervised-Classification/issues/74)
+
+[In general you should scale the learning rate linearly with the batch size, such that a smaller batch size corresponds with a smaller learning rate. This is only valid for sgd though, adam has different rules.](https://github.com/wvangansbeke/Unsupervised-Classification/issues/26)
+
+## Remarks regarding environment configuration:
+
+### Create a new python environment:
+
+In Ubuntu 24.04 this is necessary to install python packages using pip:
+```bash
+python3 -m venv myenvTesis
+source myenvTesis/bin/activate
+pip install package_name
+
+source deactivate
+```
+
+### numpy version < 2.0.0
 
 ATTENTION! numpy version < 2.0.0 needed, if not, it will fail with the following error:
 > OverflowError: Python integer -20 out of bounds for uint8
@@ -37,40 +113,7 @@ ATTENTION! numpy version < 2.0.0 needed, if not, it will fail with the following
 pip install numpy==1.26.4
 ```
 
-Backbone training (features extractor), DYB-linearHead:
-
-```bash
-python main_supcon.py --batch_size 64 --num_workers 8 --learning_rate 0.016 --lr_decay_epochs 10 --temp 0.07 --cosine --mean "0.0418, 0.0353, 0.0409" --std "0.0956, 0.0911, 0.0769" --dataset path --data_folder /home/dsosatr/tesis/DYB-linearHead/train/ --size 224
-```
-
-Head Training (classifier):
-
-```bash
-python main_linear.py --batch_size 128 --num_workers 8 --learning_rate 5 --ckpt /home/dsosatr/tesis/cnnmodel/SupContrast/save/SupCon/cifar10_models/SupCon_cifar10_resnet50_lr_0.5_decay_0.0001_bsz_128_temp_0.1_trial_0_cosine_warm/last.pth
-```
-
-Backbone training (features extractor), DYB-cosine:
-```bash
-python main_supcon.py --batch_size 32 --num_workers 8 --learning_rate 0.016 --lr_decay_epochs 10 --temp 0.07 --cosine --mean "0.0419, 0.0355, 0.0410" --std "0.0959, 0.0913, 0.0771" --dataset path --data_folder /home/dsosatr/tesis/DYB-original/train/ --size 224
-```
-
-### Elapsed time by type of training
-
-
-
-### Results
-
-The backbone weights used for the model trainig are the ones from this folder:
-
-> SupCon_path_resnet50timm_lr_0.016_decay_0.0001_bsz_32_temp_0.07_trial_0_cosine_warm_94.69/last.pth
-
-### Notes regarding training
-
-[It is quite common for images with low resolution (e.g. 32x32 for CIFAR-10). In order to keep more spatial information before the average pool operator, the max pooling layer is removed. Notice that the filter-, stride- and padding size in the first convolution layer are also different from the conventional implementation. Again, this is to better preserve spatial information.](https://github.com/wvangansbeke/Unsupervised-Classification/issues/74)
-
-[In general you should scale the learning rate linearly with the batch size, such that a smaller batch size corresponds with a smaller learning rate. This is only valid for sgd though, adam has different rules.](https://github.com/wvangansbeke/Unsupervised-Classification/issues/26)
-
-### Reviewing logs after model training
+### Analyzing loss curve after model training
 
 In terminal, change path to where the log file exists, then:
 
