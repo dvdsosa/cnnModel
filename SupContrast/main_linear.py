@@ -272,6 +272,9 @@ def main():
     # tensorboard
     logger = tb_logger.Logger(logdir=opt.tb_folder, flush_secs=10)
 
+    filename = os.path.basename(opt.ckpt)
+    filename_without_extension = os.path.splitext(filename)[0]
+
     # training routine
     for epoch in range(1, opt.epochs + 1):
         adjust_learning_rate(opt, optimizer, epoch)
@@ -294,14 +297,14 @@ def main():
         if val_acc > best_acc:
             best_acc = val_acc
             best_epoch = epoch
-            save_file = os.path.join(
-                opt.save_folder, 'ckpt_epoch_{epoch}.pth'.format(epoch=epoch))
+            save_file = os.path.join(opt.save_folder, filename_without_extension, 'ckpt_epoch_{epoch}.pth'.format(epoch=epoch))
+            new_path = os.path.join(opt.save_folder, filename_without_extension)
+            if not os.path.isdir(new_path):
+                os.makedirs(new_path)
             save_model(classifier, optimizer, opt, epoch, save_file)
 
-    filename = os.path.basename(opt.ckpt)
-
-    print('Best accuracy at epoch {} is {:.2f}'.format(best_epoch, best_acc))
-    return f'Best accuracy at epoch {best_epoch}: {best_acc:.2f}'
+    print(f'Best accuracy at epoch {best_epoch} is {best_acc:.2f}%, ckpt filename is {filename}')
+    return f'Best accuracy at epoch {best_epoch} is {best_acc:.2f}%, ckpt filename is {filename}'
 
 
 if __name__ == '__main__':
@@ -316,11 +319,12 @@ if __name__ == '__main__':
 
         # send notification email
         elapsed_time = end_time - start_time
-        # Convert elapsed_time to days and hours format
+        # Convert elapsed_time to days, hours, and minutes format
         elapsed_days = int(elapsed_time // (24 * 3600))
         elapsed_hours = int((elapsed_time % (24 * 3600)) // 3600)
-        message = f'Script execution completed!\n' \
-          f'Elapsed time: {elapsed_days} days {elapsed_hours} hours\n'
+        elapsed_minutes = int((elapsed_time % 3600) // 60)
+        message = f'Linear head script execution completed!\n' \
+          f'Elapsed time: {elapsed_days} days {elapsed_hours} hours {elapsed_minutes} minutes\n'
         message += results
         notify_me(message)
 

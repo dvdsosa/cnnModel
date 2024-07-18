@@ -334,11 +334,12 @@ if __name__ == '__main__':
 
         # send notification email
         elapsed_time = end_time - start_time
-        # Convert elapsed_time to days and hours format
+        # Convert elapsed_time to days, hours, and minutes format
         elapsed_days = int(elapsed_time // (24 * 3600))
         elapsed_hours = int((elapsed_time % (24 * 3600)) // 3600)
-        message = f'Script execution completed!\n' \
-          f'Elapsed time: {elapsed_days} days {elapsed_hours} hours\n'
+        elapsed_minutes = int((elapsed_time % 3600) // 60)
+        message = f'SupCon training script execution completed!\n' \
+          f'Elapsed time: {elapsed_days} days {elapsed_hours} hours {elapsed_minutes} minutes\n'
         notify_me(message)
 
     except Exception as e:

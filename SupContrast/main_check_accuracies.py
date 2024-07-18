@@ -64,10 +64,10 @@ def parse_option():
     parser.add_argument('--model', type=str, default='resnet50timm')
     parser.add_argument('--dataset', type=str, default='path',
                         choices=['cifar10', 'cifar100', 'path'], help='dataset')
-    parser.add_argument('--mean', type=str, default='0.0419, 0.0355, 0.0410', help='mean of dataset in path in form of str tuple')
-    parser.add_argument('--std', type=str, default='0.0959, 0.0913, 0.0771', help='std of dataset in path in form of str tuple')
-    parser.add_argument('--data_folder', type=str, default='/home/dsosatr/tesis/DYB-original/train', help='path to custom train dataset')
-    parser.add_argument('--val_folder', type=str, default='/home/dsosatr/tesis/DYB-original/test', help='path to custom load dataset')
+    parser.add_argument('--mean', type=str, default='0.0418, 0.0353, 0.0409', help='mean of dataset in path in form of str tuple')
+    parser.add_argument('--std', type=str, default='0.0956, 0.0911, 0.0769', help='std of dataset in path in form of str tuple')
+    parser.add_argument('--data_folder', type=str, default='/home/dsosatr/tesis/DYB-linearHead/train', help='path to custom train dataset')
+    parser.add_argument('--val_folder', type=str, default='/home/dsosatr/tesis/DYB-linearHead/test', help='path to custom test dataset')
     parser.add_argument('--size', type=int, default=224, help='parameter for RandomResizedCrop')
 
     # other setting
@@ -76,7 +76,7 @@ def parse_option():
     parser.add_argument('--warm', action='store_true',
                         help='warm-up for large batch training')
 
-    parser.add_argument('--ckpt', type=str, default='/home/dsosatr/tesis/cnnmodel/SupContrast/save/SupCon/path_models/SupCon_path_resnet50timm_lr_0.0125_decay_0.0001_bsz_32_temp_0.07_trial_0_cosine_warm_94.61/last.pth',
+    parser.add_argument('--ckpt', type=str, default='',
                         help='path to pre-trained model')
 
     opt = parser.parse_args()
@@ -93,7 +93,7 @@ def parse_option():
 
     # set the path according to the environment
     if opt.val_folder is None:
-        opt.val_folder = '/home/dsosatr/tesis/DYB-original/test/'
+        opt.val_folder = ''
 
     iterations = opt.lr_decay_epochs.split(',')
     opt.lr_decay_epochs = list([])
@@ -126,8 +126,8 @@ def parse_option():
         os.makedirs(opt.tb_folder)
 
     opt.save_folder = os.path.join(opt.model_path, opt.model_name + "_head")
-    if not os.path.isdir(opt.save_folder):
-        os.makedirs(opt.save_folder)
+    #if not os.path.isdir(opt.save_folder):
+    #    os.makedirs(opt.save_folder)
 
     if opt.dataset == 'cifar10':
         opt.n_cls = 10
