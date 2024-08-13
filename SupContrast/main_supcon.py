@@ -54,7 +54,7 @@ def parse_option():
                         help='momentum')
 
     # model dataset
-    parser.add_argument('--model', type=str, default='resnet50timm')
+    parser.add_argument('--model', type=str, default='seresnext50timm')
     parser.add_argument('--dataset', type=str, default='path',
                         choices=['cifar10', 'cifar100', 'dyb-planktonnet', 'path'], help='dataset')
     parser.add_argument('--mean', type=str, help='mean of dataset in path in form of str tuple')
