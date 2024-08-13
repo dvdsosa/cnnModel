@@ -20,7 +20,6 @@
 - [] Compare the performance of the backbone trained using SeResNext50 versus ResNet50.
 - [] Perform LUT prunning.
 
-
 ## CNN Model
 
 ### Training
@@ -31,7 +30,7 @@ The backbone training is performend on a fixed number of epochs (1000). Later, w
 
 For DYB-linearHead dataset, **batch size 64**:
 
-1. Backbone training (features extractor). Elapsed training time 3 days, 21 hours.
+1. Backbone training (features extractor), using ResNet50. Elapsed training time 3 days, 21 hours.
 - The batch size was set to 64 to maximize the use of the GPU RAM while training, with the goal of minimizing the training time (let's see if this is true, performing now the training with batch size 32, let's see how log it takes...)
 
 ```bash
@@ -48,12 +47,36 @@ python main_supcon.py --batch_size 64 --num_workers 8 --learning_rate 0.016 --lr
 
 For DYB-linearHead dataset, **batch size 32**:
 
-1. Backbone training (features extractor). Elapsed training time x days, x hours.
+1. Backbone training (features extractor), using ResNet50. Elapsed training time 4 days, 0 hours, 12 min.
 - The learning rate of 0.016 was selected as a linear relation between the original batch size of 1024 and learning rate of 0.5; thus dividing 0.5/32 = 0.0156 rounded to 0.016. 
 
 ```bash
-python main_supcon.py --batch_size 32 --num_workers 8 --learning_rate 0.016 --lr_decay_epochs 10 --temp 0.07 --cosine --mean "0.0418, 0.0353, 0.0409" --std "0.0956, 0.0911, 0.0769" --dataset path --data_folder /home/dsosatr/tesis/DYB-linearHead/train/ --size 224
+python3 main_supcon.py --batch_size 32 --num_workers 8 --learning_rate 0.016 --lr_decay_epochs 10 --temp 0.07 --cosine --mean "0.0418, 0.0353, 0.0409" --std "0.0956, 0.0911, 0.0769" --dataset path --data_folder /home/dsosatr/tesis/DYB-linearHead/train/ --size 224
 ```
+
+2. Head training (classifier). It is necessary to iterate over every backbone weights (in our case we iterate from epoch 700 to last):
+
+```bash
+./main_linear_loop.sh
+```
+
+---
+
+For DYB-linearHead dataset, **batch size 32**:
+
+1. Backbone training (features extractor), using SeResNext50. Elapsed training time 6 days, 0 hours, 44 min.
+
+```bash
+python3 main_supcon.py --batch_size 32 --num_workers 8 --learning_rate 0.016 --lr_decay_epochs 10 --temp 0.07 --cosine --mean "0.0418, 0.0353, 0.0409" --std "0.0956, 0.0911, 0.0769" --dataset path --data_folder /home/dsosatr/tesis/DYB-linearHead/train/ --size 224
+```
+
+2. Head training (classifier). It is necessary to iterate over every backbone weights (in our case we iterate from epoch 700 to last):
+
+```bash
+./main_linear.loop.sh
+```
+
+
 
 --- 
 
@@ -66,24 +89,30 @@ python main_supcon.py --batch_size 32 --num_workers 8 --learning_rate 0.016 --lr
 
 #### Results
 
-Resnet50timm, batch_size = 64, learning_rate = 0.016, dataset DYB-linearHead, head trained using the frozen backbone on epoch 800 and validated with the DYB-original/val folder. 17 jul 2024 20:03.
+Resnet50timm, batch_size = 64 and 32, learning_rate = 0.016, employed dataset DYB-linearHead, head trained using the frozen backbone on each epoch and validated with the DYB-original/val folder. 17 jul 20:03.
 
-| ckpt number | accuracy | epoch |
-| ----------- | -------- | ----- |
-| last.pth    | 95.10%   | 61    |
-| 1000.pth    | 95.02%   | 61    |
-| 950.pth     | 95.03%   | 51    |
-| 900.pth     | 94.89%   | 53    |
-| 850.pth     | 94.88%   | 66    |
-| 800.pth     | 95.17%   | 49    |
-| 750.pth     | 94.64%   | 70    |
-| 700.pth     | 94.64%   | 21    |
+SeResNext50timm, batch_size = 32, learning_rate = 0.016, employed dataset DYB-linearHead, head trained using the frozen backbone on each epoch and validated with the DYB-original/val folder. 6 ago 1:55
 
-Finally, we test the accuracy of the backbone epoch 800 weights, and the head epoch 800 weights, with the DYB-original/test dataset.
+| | ResNet50 | ResNet50 | SeResNext50 |
+| :-----------: | :----------------------: | :-----: | :-----: |
+| ckpt number | ResNet50 ACC bs=64 / head epoch | ACC bs=32 / head epoch | ACC bs=32 / head epoch|
+| last.pth    | 95.10% / 61   | 95.12% / 71 | 94.89% / 75 |
+| 1000.pth    | 95.02% / 61   | 95.13% / 60 | 94.85% / 52 |
+| 950.pth     | 95.03% / 51   | 95.15% / 51 | 94.85% / 56 |
+| 900.pth     | 94.89% / 53   | 95.22% / 74 | 94.93% / 55 |
+| 850.pth     | 94.88% / 66   | 95.15% / 39 | 94.91% / 48 |
+| 800.pth     | 95.17% / 49   | 95.02% / 56 | 95.05% / 73 |
+| 750.pth     | 94.64% / 70   | 94.93% / 62 | 94.89% / 58 |
+| 700.pth     | 94.64% / 21   | 95.20% / 86 | 94.92% / 30 |
 
-| Accuracy | Precision | Recall | F1 Score |
-| -------- | --------- | ------ | -------- |
-| 94.86%   | 93.65%    | 90.26% | 91.43%   |
+Finally, we test the accuracy of the backbone using the following batch sizes at epoch (see column bs / backbone epoch / head epoch), with the DYB-original/test dataset.
+
+| bs / backbone epoch / head epoch | Accuracy | Precision | Recall | F1 Score | Network |
+| ------------- | :------: | :-------: | :----: | :------: | :---: |
+| 64 / 800 / 49 | 94.86%   | 93.65%    | 90.26% | 91.43%   | ResNet50|
+| 32 / 900 / 74 | 95.20%   | 92.52%    | 90.69% | 91.09%   | ResNet50|
+| 32 / 800 / 73 | 95.30%   | 93.83%    | 89.70% | 91.20%   | SeResNext50|
+
 
 ### Notes regarding training
 
@@ -101,7 +130,7 @@ python3 -m venv myenvTesis
 source myenvTesis/bin/activate
 pip install package_name
 
-source deactivate
+deactivate
 ```
 
 ### numpy version < 2.0.0
@@ -122,7 +151,8 @@ pip uninstall numpy
 pip install numpy==1.26.4
 source envTensorboard/bin/activate
 tensorboard --logdir=.
-source deactivate
+
+deactivate
 ```
 
 If getting an error when training the model about "tensorflow not installed" derived from tensorboard, just "pip uninstall tensorflow" and then reinstall tensorboard-logger.

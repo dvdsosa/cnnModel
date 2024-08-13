@@ -61,7 +61,7 @@ def parse_option():
                         help='momentum')
 
     # model dataset
-    parser.add_argument('--model', type=str, default='resnet50timm')
+    parser.add_argument('--model', type=str, default='seresnext50timm')
     parser.add_argument('--dataset', type=str, default='path',
                         choices=['cifar10', 'cifar100', 'path'], help='dataset')
     parser.add_argument('--mean', type=str, default='0.0418, 0.0353, 0.0409', help='mean of dataset in path in form of str tuple')
@@ -153,15 +153,15 @@ class ResNet50timm(torch.nn.Module):
         x = self.classifier(x)  # Pass the output through the classifier
         return x
 
-def set_model():
+def set_model(opt):
     if torch.cuda.is_available():
         #  model = resnet18().cpu()
-        custom_model = SupConResNet(name='resnet50timm')
+        custom_model = SupConResNet(name=opt.model)
         custom_model = custom_model.cuda()
         #custom_model.load_state_dict(torch.load(file_path)['model'])
         custom_model.load_state_dict(torch.load('pesos/resnet50.pth')['model'])
 
-        classifier = LinearClassifier(name="resnet50timm", num_classes=87)
+        classifier = LinearClassifier(name=opt.model, num_classes=87)
         classifier = classifier.cuda()
         #classifier.load_state_dict(torch.load(head_path)['model'])
         classifier.load_state_dict(torch.load('pesos/resnet50_head.pth')['model'])
@@ -334,7 +334,7 @@ def main():
     _, val_loader = set_loader(opt)
 
     # build model
-    model, criterion = set_model()
+    model, criterion = set_model(opt)
 
     # eval dataset
     loss, val_acc = validate(val_loader, model, criterion, opt)
