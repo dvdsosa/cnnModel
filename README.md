@@ -16,6 +16,7 @@
 - [x] Train the backbone with DYB-cosine dataset (train, test folders).
 - [x] Compare the performance of the backbone trained using SeResNext50 versus ResNet50. Reported on the paper draft.
 - [x] Draw the plankton class distribution.
+- [x] Get performance metrics of ResNet-50 vs SeResNeXt-50.
 	
 ### TODO next day
 
