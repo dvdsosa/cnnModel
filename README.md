@@ -14,10 +14,12 @@
 - [x] Peform training with original size of 224 by 224.
 - [x] Train the backbone with DYB-linearHead dataset (train, val, test folders).
 - [x] Train the backbone with DYB-cosine dataset (train, test folders).
+- [x] Compare the performance of the backbone trained using SeResNext50 versus ResNet50. Reported on the paper draft.
+- [x] Draw the plankton class distribution.
 	
 ### TODO next day
 
-- [] Compare the performance of the backbone trained using SeResNext50 versus ResNet50.
+- [] Create LUT.
 - [] Perform LUT prunning.
 
 ## CNN Model
@@ -30,7 +32,7 @@ The backbone training is performend on a fixed number of epochs (1000). Later, w
 
 For DYB-linearHead dataset, **batch size 64**:
 
-1. Backbone training (features extractor), using ResNet50. Elapsed training time 3 days, 21 hours.
+1. Backbone training (features extractor), using **ResNet50**. Elapsed training time 3 days, 21 hours. Use of memory: 11831MiB / 12288MiB (96.28%).
 - The batch size was set to 64 to maximize the use of the GPU RAM while training, with the goal of minimizing the training time (let's see if this is true, performing now the training with batch size 32, let's see how log it takes...)
 
 ```bash
@@ -47,7 +49,8 @@ python main_supcon.py --batch_size 64 --num_workers 8 --learning_rate 0.016 --lr
 
 For DYB-linearHead dataset, **batch size 32**:
 
-1. Backbone training (features extractor), using ResNet50. Elapsed training time 4 days, 0 hours, 12 min.
+1. Backbone training (features extractor), using **ResNet50**. Elapsed training time 4 days, 0 hours, 12 min. Use of memory: 7091MiB / 12288MiB (57.71%).
+
 - The learning rate of 0.016 was selected as a linear relation between the original batch size of 1024 and learning rate of 0.5; thus dividing 0.5/32 = 0.0156 rounded to 0.016. 
 
 ```bash
@@ -64,7 +67,7 @@ python3 main_supcon.py --batch_size 32 --num_workers 8 --learning_rate 0.016 --l
 
 For DYB-linearHead dataset, **batch size 32**:
 
-1. Backbone training (features extractor), using SeResNext50. Elapsed training time 6 days, 0 hours, 44 min.
+1. Backbone training (features extractor), using **SeResNext50**. Elapsed training time 6 days, 0 hours, 44 min. Use of memory 10371MiB / 12288MiB (84.40%).
 
 ```bash
 python3 main_supcon.py --batch_size 32 --num_workers 8 --learning_rate 0.016 --lr_decay_epochs 10 --temp 0.07 --cosine --mean "0.0418, 0.0353, 0.0409" --std "0.0956, 0.0911, 0.0769" --dataset path --data_folder /home/dsosatr/tesis/DYB-linearHead/train/ --size 224
@@ -89,30 +92,34 @@ python main_supcon.py --batch_size 32 --num_workers 8 --learning_rate 0.016 --lr
 
 #### Results
 
-Resnet50timm, batch_size = 64 and 32, learning_rate = 0.016, employed dataset DYB-linearHead, head trained using the frozen backbone on each epoch and validated with the DYB-original/val folder. 17 jul 20:03.
+Resnet50timm, backbone batch_size = 64 and 32, learning_rate = 0.016, employed dataset DYB-linearHead, head trained using the frozen backbone on each epoch and validated with the DYB-original/val folder using a bs = 256 and learning_rate = 0.25. 17 jul 20:03.
 
-SeResNext50timm, batch_size = 32, learning_rate = 0.016, employed dataset DYB-linearHead, head trained using the frozen backbone on each epoch and validated with the DYB-original/val folder. 6 ago 1:55
+SeResNext50timm, backbone batch_size = 32, learning_rate = 0.016, employed dataset DYB-linearHead, head trained using the frozen backbone on each epoch and validated with the DYB-original/val folder using a bs = 256 and learning_rate = 0.25. 6 ago 1:55
 
 | | ResNet50 | ResNet50 | SeResNext50 |
 | :-----------: | :----------------------: | :-----: | :-----: |
 | ckpt number | ResNet50 ACC bs=64 / head epoch | ACC bs=32 / head epoch | ACC bs=32 / head epoch|
-| last.pth    | 95.10% / 61   | 95.12% / 71 | 94.89% / 75 |
-| 1000.pth    | 95.02% / 61   | 95.13% / 60 | 94.85% / 52 |
-| 950.pth     | 95.03% / 51   | 95.15% / 51 | 94.85% / 56 |
-| 900.pth     | 94.89% / 53   | 95.22% / 74 | 94.93% / 55 |
-| 850.pth     | 94.88% / 66   | 95.15% / 39 | 94.91% / 48 |
-| 800.pth     | 95.17% / 49   | 95.02% / 56 | 95.05% / 73 |
-| 750.pth     | 94.64% / 70   | 94.93% / 62 | 94.89% / 58 |
-| 700.pth     | 94.64% / 21   | 95.20% / 86 | 94.92% / 30 |
+| last.pth    | 95.10% / 61   | 95.13% / 41 | 94.89% / 75 |
+| 1000.pth    | 95.02% / 61   | 95.19% / 72 | 94.85% / 52 |
+| 950.pth     | 95.03% / 51   | 95.19% / 44 | 94.85% / 56 |
+| 900.pth     | 94.89% / 53   | 95.23% / 52 | 94.93% / 55 |
+| 850.pth     | 94.88% / 66   | 95.23% / 53 | 94.91% / 48 |
+| 800.pth     | 95.17% / 49   | 94.96% / 45 | 95.05% / 73 |
+| 750.pth     | 94.64% / 70   | 94.92% / 56 | 94.89% / 58 |
+| 700.pth     | 94.64% / 21   | 95.16% / 63 | 94.92% / 30 |
 
-Finally, we test the accuracy of the backbone using the following batch sizes at epoch (see column bs / backbone epoch / head epoch), with the DYB-original/test dataset.
+Finally, we test the accuracy of the backbone using the following batch sizes at epoch (see column "bs / backbone epoch / head epoch"), with the DYB-original/test dataset.
 
 | bs / backbone epoch / head epoch | Accuracy | Precision | Recall | F1 Score | Network |
 | ------------- | :------: | :-------: | :----: | :------: | :---: |
 | 64 / 800 / 49 | 94.86%   | 93.65%    | 90.26% | 91.43%   | ResNet50|
-| 32 / 900 / 74 | 95.20%   | 92.52%    | 90.69% | 91.09%   | ResNet50|
+| 32 / 900 / 52 | 95.10%   | 91.95%    | 89.87% | 90.39%   | ResNet50|
 | 32 / 800 / 73 | 95.30%   | 93.83%    | 89.70% | 91.20%   | SeResNext50|
 
+The above table was obtained using the following script, where we changed the input arguments model, val_folder, among others.
+```bash
+python3 main_check_accuracies.py
+```
 
 ### Notes regarding training
 
