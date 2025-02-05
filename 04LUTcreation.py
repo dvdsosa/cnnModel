@@ -142,8 +142,8 @@ def store_features(val_loader, model):
     with torch.no_grad():
         for idx, (images, labels) in enumerate(val_loader):
             images = images.float().cuda()
-            labels = labels.cuda()
-            bsz = labels.shape[0]
+            labels = labels
+            bsz = len(labels)
 
             # forward
             image_feature_vector = model.encoder(images)
@@ -178,6 +178,14 @@ def set_model(opt):
 
     return model, classifier, criterion
 
+# Create a custom dataset to include class names
+class CustomDataset(datasets.ImageFolder):
+    def __getitem__(self, index):
+        original_tuple = super(CustomDataset, self).__getitem__(index)
+        path, _ = self.samples[index]
+        class_name = self.classes[original_tuple[1]]
+        return original_tuple[0], class_name
+
 def set_loader(opt):    
     mean = (0.0418, 0.0353, 0.0409)
     std = (0.0956, 0.0911, 0.0769)
@@ -193,8 +201,10 @@ def set_loader(opt):
     val_dataset = datasets.ImageFolder(root=opt.dataset_path,
                             transform=val_transform)
 
+    custom_val_dataset = CustomDataset(root=opt.dataset_path, transform=val_transform)
+
     val_loader = torch.utils.data.DataLoader(
-        val_dataset, batch_size=opt.batch_size, shuffle=False,
+        custom_val_dataset, batch_size=opt.batch_size, shuffle=False,
         num_workers=8, pin_memory=True)
 
     return val_loader
