@@ -6,6 +6,7 @@ import numpy as np
 import sqlite3
 import threading
 import torch.nn as nn
+import time  # Import time module to measure time
 
 # Create a CosineSimilarity object
 cos = nn.CosineSimilarity(dim=0, eps=1e-6)
@@ -69,22 +70,118 @@ def prune_lookup_table(LUT, T_S):
 
     return LUT_prime
 
+def prune_lookup_table_cuda(LUT, T_S):
+    """
+    Prunes a lookup table (LUT) using cosine similarity on a CUDA-enabled GPU.
+    Args:
+        LUT (list of tuples): The lookup table to be pruned, where each entry is a tuple (label, feature_vector).
+        T_S (float): The similarity threshold for pruning. Pairs with cosine similarity above this threshold are considered similar.
+    Returns:
+        list of tuples: The pruned lookup table with redundant entries removed.
+    """
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # Use GPU if available
+
+    vectors = torch.stack([x[1] for x in LUT]).to(device)  # Stack feature vectors into a tensor and move to GPU
+    labels = torch.tensor([hash(x[0]) for x in LUT], dtype=torch.long, device=device)  # Convert labels to unique integers
+
+    # Normalize vectors for cosine similarity
+    normalized_vectors = torch.nn.functional.normalize(vectors, p=2, dim=1)
+
+    # Compute cosine similarity matrix (size: num_samples x num_samples)
+    similarity_matrix = torch.mm(normalized_vectors, normalized_vectors.T)  # Fast batch computation
+
+    # Create a mask to ignore self-comparisons
+    mask = torch.eye(similarity_matrix.shape[0], dtype=torch.bool, device=device)
+
+    # Apply thresholding: keep only pairs above T_S
+    similar_pairs = (similarity_matrix > T_S) & ~mask
+
+    indices_to_remove = set()
+    for i in tqdm(range(len(LUT)), desc="Pruning LUT"):
+        if i in indices_to_remove:
+            continue  # Skip already marked indices
+
+        # Find similar indices
+        similar_indices = torch.where(similar_pairs[i])[0].tolist()
+
+        # Filter only same-class vectors
+        similar_indices = [j for j in similar_indices if labels[j] == labels[i]]
+
+        if len(similar_indices) > 1:  # Multiple similar vectors → remove current
+            indices_to_remove.add(i)
+        elif len(similar_indices) == 1:  # One match → remove the other
+            indices_to_remove.add(similar_indices[0])
+
+    # Create pruned LUT by filtering out marked indices
+    LUT_prime = [LUT[i] for i in range(len(LUT)) if i not in indices_to_remove]
+
+    return LUT_prime
+
+def store_feature(label, feature_vector, cursor, conn):
+    """
+    Stores a feature vector in the database with the associated label.
+
+    Args:
+        label (str): The label associated with the feature vector.
+        feature_vector (numpy.ndarray): The feature vector to be stored.
+        cursor (sqlite3.Cursor): The database cursor for executing SQL commands.
+        conn (sqlite3.Connection): The database connection object.
+
+    Returns:
+        None
+    """
+    cursor.execute('''
+    INSERT INTO plankton_features (label, vector)
+    VALUES (?, ?)
+    ''', (label, feature_vector.tobytes()))
+    conn.commit()
+
+def init_db(conn, cursor):
+    """
+    Initializes the database by creating the 'plankton_features' table if it does not already exist.
+
+    Args:
+        conn (sqlite3.Connection): The connection object to the SQLite database.
+        cursor (sqlite3.Cursor): The cursor object to execute SQL commands.
+
+    The 'plankton_features' table has the following columns:
+        - id: INTEGER PRIMARY KEY AUTOINCREMENT
+        - label: TEXT NOT NULL
+        - vector: BLOB NOT NULL
+
+    Commits the transaction after executing the SQL command.
+    """
+    cursor.execute('''
+    CREATE TABLE IF NOT EXISTS plankton_features (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        label TEXT NOT NULL,
+        vector BLOB NOT NULL
+    )
+    ''')
+    conn.commit()
+
 def main():
     
     # Connect to SQLite database (or create it if it doesn't exist)
     conn = sqlite3.connect('plankton_db.sqlite')
     cursor = conn.cursor()
-    LUT = load_features(cursor)
+    LUT  = load_features(cursor)
 
     T_S = 0.9  # Similarity threshold
+   
+    # pruned_LUT = prune_lookup_table(LUT, T_S)    
+    pruned_LUT = prune_lookup_table_cuda(LUT, T_S)
 
-    prune_thread = threading.Thread(target=lambda: prune_lookup_table(LUT, T_S))
-    prune_thread.start()
-    prune_thread.join()
-    
     print(f"Original LUT size: {len(LUT)}")
     print(f"Pruned LUT size: {len(pruned_LUT)}")
-    
+
+    # Connect or create to SQLite database and save the pruned LUT
+    conn = sqlite3.connect('plankton_pruned_db.sqlite')
+    cursor = conn.cursor()
+    init_db(conn, cursor)
+    for label, feature_vector in tqdm(pruned_LUT, desc="Saving pruned LUT..."):
+        store_feature(label, feature_vector.cpu().numpy(), cursor, conn)
+    conn.close()
 
 if __name__ == '__main__':
     main()
