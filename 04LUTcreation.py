@@ -52,7 +52,7 @@ def init_db(conn, cursor):
     ''')
     conn.commit()
 
-def process_image_batch(val_loader, model):
+def process_image_batch(train_loader, model):
     """
     Processes a batch of images using a given model and stores the resulting feature vectors in an SQLite database.
     Args:
@@ -69,7 +69,7 @@ def process_image_batch(val_loader, model):
     init_db(conn, cursor)
 
     with torch.no_grad():
-        for idx, (images, labels) in enumerate(tqdm(val_loader)):
+        for idx, (images, labels) in enumerate(tqdm(train_loader)):
             images = images.float().cuda()
             labels = labels
             bsz = len(labels)
@@ -100,7 +100,6 @@ def set_model(opt):
     Raises:
         NotImplementedError: If no GPU is available.
     """
-
     model = SupConResNet(name=opt.model)
     criterion = torch.nn.CrossEntropyLoss()
 
@@ -213,7 +212,6 @@ class Options:
     __init__():
         Initializes the Options class with default values.
     """
-
     def __init__(self):
         self.dataset_path = '/home/dsosatr/tesis/DYB-linearHead/train/'
         self.batch_size = 256
@@ -226,13 +224,13 @@ def main():
     opt = Options()
     
     # build data loader
-    val_loader = set_loader(opt)
+    train_loader = set_loader(opt)
     
     # build model and criterion
     model, classifier, criterion = set_model(opt)
     
     # process images and store features in database
-    process_image_batch(val_loader, model)
+    process_image_batch(train_loader, model)
     
     print("Finished saving features of training set to database")
 
