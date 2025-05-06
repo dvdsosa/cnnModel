@@ -2,6 +2,7 @@ import torch
 import os
 import numpy as np
 import sqlite3
+import faiss
 
 import torch.backends.cudnn as cudnn
 from torchvision import datasets, transforms
@@ -9,77 +10,142 @@ from SupContrast.networks.resnet_big import FeatureExtractor
 from SupContrast.networks.resnet_big import SupConResNet, LinearClassifier
 from tqdm import tqdm
 
-def store_feature(label, feature_vector, cursor, conn):
-    """
-    Stores a feature vector in the database with the associated label.
-
-    Args:
-        label (str): The label associated with the feature vector.
-        feature_vector (numpy.ndarray): The feature vector to be stored.
-        cursor (sqlite3.Cursor): The database cursor for executing SQL commands.
-        conn (sqlite3.Connection): The database connection object.
-
-    Returns:
-        None
-    """
-    cursor.execute('''
-    INSERT INTO plankton_features (label, vector)
-    VALUES (?, ?)
-    ''', (label, feature_vector.tobytes()))
-    conn.commit()
-
 def init_db(conn, cursor):
     """
-    Initializes the database by creating the 'plankton_features' table if it does not already exist.
+    Initializes the database by creating the necessary table for FAISS ID to label mapping.
 
     Args:
         conn (sqlite3.Connection): The connection object to the SQLite database.
         cursor (sqlite3.Cursor): The cursor object to execute SQL commands.
 
-    The 'plankton_features' table has the following columns:
-        - id: INTEGER PRIMARY KEY AUTOINCREMENT
-        - label: TEXT NOT NULL
-        - vector: BLOB NOT NULL
-
-    Commits the transaction after executing the SQL command.
+    Creates:
+        - feature_mappings: Maps FAISS IDs to labels
     """
+    # Create the feature_mappings table for FAISS integration
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS plankton_features (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        label TEXT NOT NULL,
-        vector BLOB NOT NULL
+    CREATE TABLE IF NOT EXISTS feature_mappings (
+        faiss_id INTEGER PRIMARY KEY,
+        label TEXT NOT NULL
     )
     ''')
     conn.commit()
 
+def load_or_init_faiss_index(dim=2048):
+    """
+    Loads an existing FAISS index or initializes a new one if it doesn't exist.
+    
+    Args:
+        dim (int): Dimension of feature vectors, default is 2048.
+        
+    Returns:
+        faiss.IndexFlatIP: FAISS index for efficient similarity search.
+    """
+    index_path = 'faiss_index.bin'
+    
+    if os.path.exists(index_path):
+        try:
+            index = faiss.read_index(index_path)
+            print(f"Loaded FAISS index with {index.ntotal} vectors")
+            return index
+        except Exception as e:
+            print(f"Error loading FAISS index: {e}")
+    
+    # Create a new index if file doesn't exist or loading failed
+    index = faiss.IndexFlatIP(dim)  # Inner product for cosine similarity
+    print(f"Created new FAISS index with dimension {dim}")
+    return index
+
+def save_faiss_index(index):
+    """
+    Saves the FAISS index to disk.
+    
+    Args:
+        index (faiss.Index): The FAISS index to save.
+    """
+    index_path = 'faiss_index.bin'
+    try:
+        faiss.write_index(index, index_path)
+        print(f"FAISS index saved with {index.ntotal} vectors")
+    except Exception as e:
+        print(f"Error saving FAISS index: {e}")
+
 def process_image_batch(train_loader, model):
     """
-    Processes a batch of images using a given model and stores the resulting feature vectors in an SQLite database.
+    Processes a batch of images, extracts feature vectors using a given model, 
+    and stores the features in a FAISS index and their mappings in an SQLite database.
     Args:
-        val_loader (torch.utils.data.DataLoader): DataLoader providing batches of images and labels.
-        model (torch.nn.Module): The neural network model used to extract feature vectors from images.
-    Returns:
-        None
+        train_loader (torch.utils.data.DataLoader): DataLoader providing batches of images and labels.
+        model (torch.nn.Module): PyTorch model with an encoder for feature extraction.
+    Workflow:
+        1. Sets the model to evaluation mode.
+        2. Connects to an SQLite database and initializes it if necessary.
+        3. Loads or initializes a FAISS index for storing feature vectors.
+        4. Iterates over batches of images and labels from the DataLoader:
+            - Extracts feature vectors using the model's encoder.
+            - Normalizes the feature vectors for cosine similarity.
+            - Adds the feature vectors to the FAISS index.
+            - Maps the FAISS index IDs to their corresponding labels in the SQLite database.
+        5. Commits changes to the database after processing each batch.
+        6. Saves the FAISS index and closes the database connection.
+    Notes:
+        - The FAISS index is used for efficient similarity search.
+        - The SQLite database stores mappings between FAISS IDs and labels.
+        - Feature vectors are normalized to ensure compatibility with cosine similarity.
+    Exceptions:
+        - Catches and prints any exceptions that occur during batch processing.
+    Outputs:
+        - Prints the total number of vectors in the FAISS index and the number of vectors added.
     """
+
     model.eval()
     
     # Connect to SQLite database (or create it if it doesn't exist)
     conn = sqlite3.connect('plankton_db.sqlite')
     cursor = conn.cursor()
     init_db(conn, cursor)
-
-    with torch.no_grad():
-        for idx, (images, labels) in enumerate(tqdm(train_loader)):
-            images = images.float().cuda()
-            labels = labels
-            bsz = len(labels)
-
-            # forward
-            image_feature_vector = model.encoder(images)
-            for label, feature_vector in zip(labels, image_feature_vector):
-                store_feature(label, feature_vector.cpu().numpy().flatten(), cursor, conn)
-
-    conn.close()
+    
+    # Load or initialize FAISS index
+    faiss_index = load_or_init_faiss_index(dim=2048)
+    initial_index_size = faiss_index.ntotal
+    
+    try:
+        with torch.no_grad():
+            for idx, (images, labels) in enumerate(tqdm(train_loader)):
+                images = images.float().cuda()
+                bsz = len(labels)
+                
+                # Extract features
+                image_feature_vector = model.encoder(images)
+                
+                # Process each feature vector
+                for i, (label, feature_vector) in enumerate(zip(labels, image_feature_vector)):
+                    # Normalize for cosine similarity (not performed on the model.encoder)
+                    feature_vector = torch.nn.functional.normalize(feature_vector, p=2, dim=0)
+                    # FAISS requires Numpy arrays to be of type float32, stored in CPU memory, and flattened into a 1D structure for optimal processing.
+                    feature_np = feature_vector.cpu().numpy().flatten().astype(np.float32)
+                    
+                    # Add vector to FAISS index
+                    faiss_index.add(feature_np.reshape(1, -1))
+                    
+                    # Calculate the FAISS ID (index is zero-based)
+                    faiss_id = initial_index_size + i + sum([len(train_loader.dataset) for _ in range(idx)])
+                    
+                    # Store mapping in SQLite
+                    cursor.execute('''
+                    INSERT INTO feature_mappings (faiss_id, label)
+                    VALUES (?, ?)
+                    ''', (int(faiss_id), label))
+                    
+                # Commit every batch to avoid data loss
+                conn.commit()
+    
+    except Exception as e:
+        print(f"Error processing batch: {e}")
+    finally:
+        # Save FAISS index and close database connection
+        save_faiss_index(faiss_index)
+        conn.close()
+        print(f"FAISS index now contains {faiss_index.ntotal} vectors (added {faiss_index.ntotal - initial_index_size})")
 
 def set_model(opt):
     """
@@ -100,6 +166,7 @@ def set_model(opt):
     Raises:
         NotImplementedError: If no GPU is available.
     """
+
     model = SupConResNet(name=opt.model)
     criterion = torch.nn.CrossEntropyLoss()
 
@@ -150,6 +217,7 @@ class CustomDataset(datasets.ImageFolder):
     tuple
         A tuple containing the image tensor and the class name.
     """
+    
     def __getitem__(self, index):
         original_tuple = super(CustomDataset, self).__getitem__(index)
         path, _ = self.samples[index]
@@ -168,6 +236,7 @@ def set_loader(opt):
     Returns:
         DataLoader: A PyTorch DataLoader for the validation dataset.
     """
+
     mean = (0.0418, 0.0353, 0.0409)
     std = (0.0956, 0.0911, 0.0769)
     normalize = transforms.Normalize(mean=mean, std=std)
@@ -212,14 +281,27 @@ class Options:
     __init__():
         Initializes the Options class with default values.
     """
+
     def __init__(self):
         self.dataset_path = '/home/dsosatr/tesis/DYB-linearHead/train/'
         self.batch_size = 256
         self.model = 'resnet50timm'
         self.n_cls = 87
         self.ckpt = '/home/dsosatr/tesis/cnnmodel/SupContrast/save/SupCon/path_models/SupCon_path_resnet50timm_lr_0.016_decay_0.0001_bsz_32_temp_0.07_trial_0_cosine_warm/ckpt_epoch_900.pth'
+        self.learning_rate = 0.001
 
 def main():
+    """
+    Main function to execute the feature extraction pipeline.
+    This function performs the following steps:
+    1. Initializes options and configurations.
+    2. Builds the data loader for the training dataset.
+    3. Constructs the model, classifier, and loss criterion.
+    4. Processes batches of images from the training dataset and stores
+       their extracted features in a database (SQLite named plankton_db.sqlite) 
+       and a FAISS index (named faiss_index.bin).
+    Prints a confirmation message upon successful completion of the process.
+    """
 
     opt = Options()
     
@@ -233,7 +315,6 @@ def main():
     process_image_batch(train_loader, model)
     
     print("Finished saving features of training set to database")
-
 
 if __name__ == '__main__':
     main()
