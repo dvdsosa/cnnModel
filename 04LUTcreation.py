@@ -106,7 +106,7 @@ def process_image_batch(train_loader, model):
     
     # Load or initialize FAISS index
     faiss_index = load_or_init_faiss_index(dim=2048)
-    initial_index_size = faiss_index.ntotal
+    faiss_id = 0
     
     try:
         with torch.no_grad():
@@ -126,15 +126,16 @@ def process_image_batch(train_loader, model):
                     
                     # Add vector to FAISS index
                     faiss_index.add(feature_np.reshape(1, -1))
-                    
-                    # Calculate the FAISS ID (index is zero-based)
-                    faiss_id = initial_index_size + i + sum([len(train_loader.dataset) for _ in range(idx)])
-                    
+                                        
                     # Store mapping in SQLite
                     cursor.execute('''
                     INSERT INTO feature_mappings (faiss_id, label)
                     VALUES (?, ?)
                     ''', (int(faiss_id), label))
+                    
+                    # Update the FAISS ID (index is zero-based)
+                    faiss_id += 1
+                    print(f"Processed image with faiss_id {faiss_id} with label {label}")
                     
                 # Commit every batch to avoid data loss
                 conn.commit()
@@ -145,7 +146,6 @@ def process_image_batch(train_loader, model):
         # Save FAISS index and close database connection
         save_faiss_index(faiss_index)
         conn.close()
-        print(f"FAISS index now contains {faiss_index.ntotal} vectors (added {faiss_index.ntotal - initial_index_size})")
 
 def set_model(opt):
     """
