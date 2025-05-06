@@ -17,10 +17,10 @@
 - [x] Compare the performance of the backbone trained using SeResNext50 versus ResNet50. Reported on the paper draft.
 - [x] Draw the plankton class distribution.
 - [x] Get performance metrics of ResNet-50 vs SeResNeXt-50.
+- [X] Create LUT.
 	
 ### TODO next day
 
-- [] Create LUT.
 - [] Perform LUT prunning.
 
 ## CNN Model
