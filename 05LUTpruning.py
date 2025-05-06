@@ -86,6 +86,26 @@ def save_pruned_faiss_index(faiss_index, mappings, ids_to_remove, output_path):
     print(f"Pruned FAISS index saved with {new_index.ntotal} vectors at {output_path}")
 
 def main():
+    """
+    Main function to perform LUT pruning on a FAISS index and a feature mapping database.
+
+    This function:
+    1. Loads a FAISS index from a specified file path.
+    2. Loads feature mappings from a SQLite database.
+    3. Identifies redundant examples based on a similarity threshold.
+    4. Removes redundant mappings from the database.
+    5. Saves the pruned FAISS index to a new file.
+
+    Constants:
+        FAISS_INDEX_PATH (str): Path to the FAISS index file.
+        SQLITE_DB_PATH (str): Path to the SQLite database file.
+        SIMILARITY_THRESHOLD (float): Threshold for determining redundancy.
+
+    Outputs:
+        Prints the number of feature mappings loaded, the number of redundant examples pruned,
+        and confirmation messages for database and FAISS index updates.
+    """
+
     faiss_index = load_faiss_index(FAISS_INDEX_PATH)
     mappings = load_feature_mappings(SQLITE_DB_PATH)
     print(f"Loaded {len(mappings)} feature mappings.")
