@@ -72,12 +72,39 @@ def prune_lut(faiss_index, mappings, threshold):
                     ids_to_remove.add(ids[j])
     return ids_to_remove
 
-def save_pruned_faiss_index(faiss_index, mappings, ids_to_remove, output_path):
-    # Keep only the vectors whose faiss_id is not in ids_to_remove
-    keep_ids = [int(faiss_id) for faiss_id, _ in mappings if int(faiss_id) not in ids_to_remove]
-    if not keep_ids:
-        raise RuntimeError("No vectors left after pruning.")
-    # Reconstruct vectors and build new index
+def save_pruned_db(db_path, mappings, ids_to_remove, output_db_path, keep_ids):
+    """
+    Create a new SQLite database with the same schema and only the non-pruned mappings.
+    Reassign faiss_id values to be sequential (0, 1, ..., N-1) matching the order of keep_ids.
+    Returns the new mappings as a list of (new_faiss_id, label).
+    """
+    import shutil
+    # Copy the original DB to the new location
+    shutil.copy(db_path, output_db_path)
+    conn = sqlite3.connect(output_db_path)
+    cursor = conn.cursor()
+    # Remove redundant mappings from the new DB
+    cursor.executemany(
+        "DELETE FROM feature_mappings WHERE faiss_id = ?",
+        [(int(fid),) for fid in ids_to_remove]
+    )
+    # Reassign faiss_id sequentially
+    # Get the label for each keep_id in order
+    placeholders = ",".join("?" for _ in keep_ids)
+    cursor.execute(f"SELECT faiss_id, label FROM feature_mappings WHERE faiss_id IN ({placeholders})", keep_ids)
+    id_label_map = {int(row[0]): row[1] for row in cursor.fetchall()}
+    new_mappings = []
+    for new_id, old_id in enumerate(keep_ids):
+        label = id_label_map[old_id]
+        cursor.execute("UPDATE feature_mappings SET faiss_id = ? WHERE faiss_id = ?", (new_id, old_id))
+        new_mappings.append((new_id, label))
+    conn.commit()
+    conn.close()
+    print(f"Pruned SQLite DB saved at {output_db_path}")
+    return new_mappings
+
+def save_pruned_faiss_index(faiss_index, keep_ids, output_path):
+    # Reconstruct vectors and build new index in the order of keep_ids
     vectors = np.stack([faiss_index.reconstruct(fid) for fid in keep_ids]).astype(np.float32)
     dim = vectors.shape[1]
     new_index = faiss.IndexFlatIP(dim)
@@ -93,7 +120,7 @@ def main():
     1. Loads a FAISS index from a specified file path.
     2. Loads feature mappings from a SQLite database.
     3. Identifies redundant examples based on a similarity threshold.
-    4. Removes redundant mappings from the database.
+    4. Creates a new pruned SQLite database.
     5. Saves the pruned FAISS index to a new file.
 
     Constants:
@@ -113,12 +140,14 @@ def main():
     ids_to_remove = prune_lut(faiss_index, mappings, SIMILARITY_THRESHOLD)
     print(f"Pruning {len(ids_to_remove)} redundant examples.")
 
-    # Remove from database
-    remove_from_db(SQLITE_DB_PATH, ids_to_remove)
-    print("Removed redundant mappings from database.")
+    # Determine keep_ids in original order
+    keep_ids = [int(faiss_id) for faiss_id, _ in mappings if int(faiss_id) not in ids_to_remove]
 
-    # Save pruned FAISS index
-    save_pruned_faiss_index(faiss_index, mappings, ids_to_remove, 'faiss_index_pruned.bin')
+    # Save pruned database to a new file and get new mappings with sequential faiss_id
+    new_mappings = save_pruned_db(SQLITE_DB_PATH, mappings, ids_to_remove, 'plankton_db_pruned.sqlite', keep_ids)
+
+    # Save pruned FAISS index in the same order as new_mappings (sequential IDs)
+    save_pruned_faiss_index(faiss_index, keep_ids, 'faiss_index_pruned.bin')
 
 if __name__ == '__main__':
     main()
