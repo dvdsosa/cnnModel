@@ -41,17 +41,13 @@ def load_or_init_faiss_index(dim=2048):
         faiss.IndexFlatIP: FAISS index for efficient similarity search.
     """
     index_path = 'faiss_index.bin'
-    
+    # Always overwrite: if file exists, remove it
     if os.path.exists(index_path):
-        try:
-            index = faiss.read_index(index_path)
-            print(f"Loaded FAISS index with {index.ntotal} vectors")
-            return index
-        except Exception as e:
-            print(f"Error loading FAISS index: {e}")
-    
-    # Create a new index if file doesn't exist or loading failed
-    index = faiss.IndexFlatIP(dim)  # Inner product for cosine similarity
+        os.remove(index_path)
+    # Always create a new index
+    # With `faiss.IndexFlatIP` does perform cosine similarity search. 
+    # This is because, for unit vectors, the inner product is mathematically equivalent to cosine similarity if vectors are L2 normalized.
+    index = faiss.IndexFlatIP(dim)
     print(f"Created new FAISS index with dimension {dim}")
     return index
 
@@ -63,6 +59,7 @@ def save_faiss_index(index):
         index (faiss.Index): The FAISS index to save.
     """
     index_path = 'faiss_index.bin'
+    # Always overwrite
     try:
         faiss.write_index(index, index_path)
         print(f"FAISS index saved with {index.ntotal} vectors")
@@ -99,12 +96,15 @@ def process_image_batch(train_loader, model):
 
     model.eval()
     
-    # Connect to SQLite database (or create it if it doesn't exist)
-    conn = sqlite3.connect('plankton_db.sqlite')
+    # Always overwrite the SQLite database if it exists
+    db_path = 'plankton_db.sqlite'
+    if os.path.exists(db_path):
+        os.remove(db_path)
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     init_db(conn, cursor)
     
-    # Load or initialize FAISS index
+    # Load or initialize FAISS index (always new)
     faiss_index = load_or_init_faiss_index(dim=2048)
     faiss_id = 0
     
@@ -119,7 +119,7 @@ def process_image_batch(train_loader, model):
                 
                 # Process each feature vector
                 for i, (label, feature_vector) in enumerate(zip(labels, image_feature_vector)):
-                    # Normalize for cosine similarity (not performed on the model.encoder)
+                    # L2 normalize the feature vector for comparing using cosine similarity (not performed on the model.encoder)
                     feature_vector = torch.nn.functional.normalize(feature_vector, p=2, dim=0)
                     # FAISS requires Numpy arrays to be of type float32, stored in CPU memory, and flattened into a 1D structure for optimal processing.
                     feature_np = feature_vector.cpu().numpy().flatten().astype(np.float32)
@@ -135,7 +135,7 @@ def process_image_batch(train_loader, model):
                     
                     # Update the FAISS ID (index is zero-based)
                     faiss_id += 1
-                    print(f"Processed image with faiss_id {faiss_id} with label {label}")
+                    #print(f"Processed image with faiss_id {faiss_id} with label {label}")
                     
                 # Commit every batch to avoid data loss
                 conn.commit()
