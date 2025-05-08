@@ -27,4 +27,24 @@ This repository contains code and documentation for training ResNet50 with Super
 
 ## Results
 
+Selected SIMILARITY_THRESHOLD value of 0.89, as determined from the [comparison shown in the figure below](08_thresholds_comparison.png):
+
+```json
+  "0.88": {
+    "Multiclass Accuracy": 95.06,
+    "Mean processing time per image (seconds)": 0.0122,
+    "FAISS index file size (MB)": 126.13
+  },
+  "0.89": {
+    "Multiclass Accuracy": 95.07,
+    "Mean processing time per image (seconds)": 0.0126,
+    "FAISS index file size (MB)": 142.84
+  },
+  "0.9": {
+    "Multiclass Accuracy": 95.03,
+    "Mean processing time per image (seconds)": 0.0136,
+    "FAISS index file size (MB)": 160.7
+  },
+```
+
 ![Comparison of Thresholds](08_thresholds_comparison.png)
