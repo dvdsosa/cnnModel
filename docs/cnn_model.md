@@ -106,3 +106,4 @@ python3 main_check_accuracies.py
 - [Building LeNet5 in Pytorch](https://youtu.be/0TtYx_XaXjA?si=rX2Pzy1NJQ5G0ZRU)
 - [LeNet5 git repo](https://github.com/maciejbalawejder/Deep-Learning-Collection/tree/main/ConvNets/LeNet)
 - [CNN using Pytorch](https://medium.com/nerd-for-tech/convolution-neural-network-in-pytorch-81023e7de5b9)
+- [CNN as feature extractor](cnn_theory.md)
