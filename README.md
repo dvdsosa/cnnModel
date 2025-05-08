@@ -7,14 +7,14 @@ This repository contains code and documentation for training ResNet50 with Super
 | SCRIPT                                	| AIM                                                         	    |
 |---------------------------------------	|---------------------------------------------------------------	|
 | 01_yang_split_dataset_cosine.py       	| Split dataset into 80-20 (train, val).                      	    |
-| 01_yang_split_dataset_linear_head.py  	| Split dataset into 75-15-15 (train, val, test).             	    |
-| 02_mean_std_variables.py              	| Compute mean and std values for images normalization.       	    |
-| 03_count_classes.py                   	| Visualize the number of instances per class in a dataset.   	    |
-| 04_lut_creation.py                    	| Create a LUT based on feature vectors of 2048 length.       	    |
-| 05_lut_pruning.py                     	| Prune the previous created LUT based on a THRESHOLD.        	    |
-| 06_inference.py                       	| Perform the inference on the test set using the pruned LUT. 	    |
-| 07_run_threshold_experiments.py           | Test metrics depending on different SIMILARITY_THRESHOLD values.  |
-| 08_thresholds_comparison.py               | Plot model accuracy versus SIMILARITY_THRESHOLD values.           |
+| 01_yang_split_dataset_linear_head.py  	| Split the dataset into 75-15-15 (train, validation, test).   	    |
+| 02_mean_std_variables.py              	| Compute mean and std deviation values for image normalization.    |
+| 03_count_classes.py                   	| Visualize the number of instances per class in the dataset.  	    |
+| 04_lut_creation.py                    	| Create a LUT based on feature vectors of length 2048.        	    |
+| 05_lut_pruning.py                     	| Prune the previously created LUT based on a THRESHOLD.       	    |
+| 06_inference.py                       	| Perform inference on the test set using the pruned LUT.      	    |
+| 07_run_threshold_experiments.py           | Generate metrics for various SIMILARITY_THRESHOLD values.         |
+| 08_thresholds_comparison.py               | Plot model accuracy against different SIMILARITY_THRESHOLD values.|
 
 ## Documentation
 
