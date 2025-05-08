@@ -1,0 +1,191 @@
+{
+  "0.8": {
+    "Multiclass Accuracy": 94.11,
+    "Multiclass Precision (macro)": 89.44,
+    "Multiclass Recall (macro)": 87.46,
+    "Multiclass F1 Score (macro)": 87.67,
+    "Total elapsed time (seconds)": 51.27,
+    "Mean processing time per image (seconds)": 0.0072,
+    "FAISS index file size (MB)": 38.1
+  },
+  "0.81": {
+    "Multiclass Accuracy": 94.5,
+    "Multiclass Precision (macro)": 90.41,
+    "Multiclass Recall (macro)": 88.48,
+    "Multiclass F1 Score (macro)": 88.88,
+    "Total elapsed time (seconds)": 53.44,
+    "Mean processing time per image (seconds)": 0.0075,
+    "FAISS index file size (MB)": 44.77
+  },
+  "0.82": {
+    "Multiclass Accuracy": 94.6,
+    "Multiclass Precision (macro)": 91.12,
+    "Multiclass Recall (macro)": 89.04,
+    "Multiclass F1 Score (macro)": 89.57,
+    "Total elapsed time (seconds)": 56.45,
+    "Mean processing time per image (seconds)": 0.0079,
+    "FAISS index file size (MB)": 52.39
+  },
+  "0.83": {
+    "Multiclass Accuracy": 94.73,
+    "Multiclass Precision (macro)": 91.5,
+    "Multiclass Recall (macro)": 89.53,
+    "Multiclass F1 Score (macro)": 90.0,
+    "Total elapsed time (seconds)": 59.82,
+    "Mean processing time per image (seconds)": 0.0084,
+    "FAISS index file size (MB)": 61.21
+  },
+  "0.84": {
+    "Multiclass Accuracy": 94.7,
+    "Multiclass Precision (macro)": 91.51,
+    "Multiclass Recall (macro)": 89.6,
+    "Multiclass F1 Score (macro)": 89.96,
+    "Total elapsed time (seconds)": 63.23,
+    "Mean processing time per image (seconds)": 0.0088,
+    "FAISS index file size (MB)": 71.41
+  },
+  "0.85": {
+    "Multiclass Accuracy": 94.78,
+    "Multiclass Precision (macro)": 91.94,
+    "Multiclass Recall (macro)": 89.87,
+    "Multiclass F1 Score (macro)": 90.37,
+    "Total elapsed time (seconds)": 67.43,
+    "Mean processing time per image (seconds)": 0.0094,
+    "FAISS index file size (MB)": 83.34
+  },
+  "0.86": {
+    "Multiclass Accuracy": 94.82,
+    "Multiclass Precision (macro)": 92.25,
+    "Multiclass Recall (macro)": 90.24,
+    "Multiclass F1 Score (macro)": 90.74,
+    "Total elapsed time (seconds)": 72.29,
+    "Mean processing time per image (seconds)": 0.0101,
+    "FAISS index file size (MB)": 95.77
+  },
+  "0.87": {
+    "Multiclass Accuracy": 94.99,
+    "Multiclass Precision (macro)": 92.6,
+    "Multiclass Recall (macro)": 90.8,
+    "Multiclass F1 Score (macro)": 91.23,
+    "Total elapsed time (seconds)": 77.98,
+    "Mean processing time per image (seconds)": 0.0109,
+    "FAISS index file size (MB)": 110.43
+  },
+  "0.88": {
+    "Multiclass Accuracy": 95.06,
+    "Multiclass Precision (macro)": 92.59,
+    "Multiclass Recall (macro)": 90.61,
+    "Multiclass F1 Score (macro)": 91.13,
+    "Total elapsed time (seconds)": 87.5,
+    "Mean processing time per image (seconds)": 0.0122,
+    "FAISS index file size (MB)": 126.13
+  },
+  "0.89": {
+    "Multiclass Accuracy": 95.07,
+    "Multiclass Precision (macro)": 92.71,
+    "Multiclass Recall (macro)": 90.66,
+    "Multiclass F1 Score (macro)": 91.2,
+    "Total elapsed time (seconds)": 90.37,
+    "Mean processing time per image (seconds)": 0.0126,
+    "FAISS index file size (MB)": 142.84
+  },
+  "0.9": {
+    "Multiclass Accuracy": 95.03,
+    "Multiclass Precision (macro)": 92.69,
+    "Multiclass Recall (macro)": 90.76,
+    "Multiclass F1 Score (macro)": 91.27,
+    "Total elapsed time (seconds)": 96.97,
+    "Mean processing time per image (seconds)": 0.0136,
+    "FAISS index file size (MB)": 160.7
+  },
+  "0.91": {
+    "Multiclass Accuracy": 95.06,
+    "Multiclass Precision (macro)": 92.77,
+    "Multiclass Recall (macro)": 90.92,
+    "Multiclass F1 Score (macro)": 91.4,
+    "Total elapsed time (seconds)": 103.22,
+    "Mean processing time per image (seconds)": 0.0144,
+    "FAISS index file size (MB)": 178.47
+  },
+  "0.92": {
+    "Multiclass Accuracy": 95.05,
+    "Multiclass Precision (macro)": 92.8,
+    "Multiclass Recall (macro)": 91.04,
+    "Multiclass F1 Score (macro)": 91.48,
+    "Total elapsed time (seconds)": 109.92,
+    "Mean processing time per image (seconds)": 0.0154,
+    "FAISS index file size (MB)": 195.95
+  },
+  "0.93": {
+    "Multiclass Accuracy": 95.05,
+    "Multiclass Precision (macro)": 92.8,
+    "Multiclass Recall (macro)": 91.14,
+    "Multiclass F1 Score (macro)": 91.54,
+    "Total elapsed time (seconds)": 115.88,
+    "Mean processing time per image (seconds)": 0.0162,
+    "FAISS index file size (MB)": 212.52
+  },
+  "0.94": {
+    "Multiclass Accuracy": 95.05,
+    "Multiclass Precision (macro)": 92.77,
+    "Multiclass Recall (macro)": 91.09,
+    "Multiclass F1 Score (macro)": 91.49,
+    "Total elapsed time (seconds)": 120.9,
+    "Mean processing time per image (seconds)": 0.0169,
+    "FAISS index file size (MB)": 227.39
+  },
+  "0.95": {
+    "Multiclass Accuracy": 95.07,
+    "Multiclass Precision (macro)": 92.91,
+    "Multiclass Recall (macro)": 91.15,
+    "Multiclass F1 Score (macro)": 91.61,
+    "Total elapsed time (seconds)": 125.37,
+    "Mean processing time per image (seconds)": 0.0175,
+    "FAISS index file size (MB)": 241.29
+  },
+  "0.96": {
+    "Multiclass Accuracy": 95.07,
+    "Multiclass Precision (macro)": 92.91,
+    "Multiclass Recall (macro)": 91.15,
+    "Multiclass F1 Score (macro)": 91.61,
+    "Total elapsed time (seconds)": 130.87,
+    "Mean processing time per image (seconds)": 0.0183,
+    "FAISS index file size (MB)": 250.75
+  },
+  "0.97": {
+    "Multiclass Accuracy": 95.07,
+    "Multiclass Precision (macro)": 92.91,
+    "Multiclass Recall (macro)": 91.15,
+    "Multiclass F1 Score (macro)": 91.61,
+    "Total elapsed time (seconds)": 137.66,
+    "Mean processing time per image (seconds)": 0.0193,
+    "FAISS index file size (MB)": 256.11
+  },
+  "0.98": {
+    "Multiclass Accuracy": 95.07,
+    "Multiclass Precision (macro)": 92.91,
+    "Multiclass Recall (macro)": 91.15,
+    "Multiclass F1 Score (macro)": 91.61,
+    "Total elapsed time (seconds)": 130.86,
+    "Mean processing time per image (seconds)": 0.0183,
+    "FAISS index file size (MB)": 257.93
+  },
+  "0.99": {
+    "Multiclass Accuracy": 95.07,
+    "Multiclass Precision (macro)": 92.91,
+    "Multiclass Recall (macro)": 91.15,
+    "Multiclass F1 Score (macro)": 91.61,
+    "Total elapsed time (seconds)": 130.53,
+    "Mean processing time per image (seconds)": 0.0183,
+    "FAISS index file size (MB)": 258.81
+  },
+  "1.0": {
+    "Multiclass Accuracy": 95.07,
+    "Multiclass Precision (macro)": 92.91,
+    "Multiclass Recall (macro)": 91.15,
+    "Multiclass F1 Score (macro)": 91.61,
+    "Total elapsed time (seconds)": 129.72,
+    "Mean processing time per image (seconds)": 0.0182,
+    "FAISS index file size (MB)": 258.86
+  }
+}
