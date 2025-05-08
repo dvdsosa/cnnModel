@@ -137,6 +137,7 @@ def main():
     mappings = load_feature_mappings(SQLITE_DB_PATH)
     print(f"Loaded {len(mappings)} feature mappings.")
 
+    print(f"Using similarity threshold: {SIMILARITY_THRESHOLD}")
     ids_to_remove = prune_lut(faiss_index, mappings, SIMILARITY_THRESHOLD)
     print(f"Pruning {len(ids_to_remove)} redundant examples.")
 
