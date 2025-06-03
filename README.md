@@ -18,12 +18,13 @@ This repository contains code and documentation for training ResNet50 with Super
 
 ## Documentation
 
-| File | Description |
-|------|-------------|
-| [Tasks](docs/tasks.md) | Project tasks tracking - completed and pending items |
-| [CNN Model](docs/cnn_model.md) | Details about the CNN model training methodology and results |
-| [Environment Configuration](docs/environment.md) | Instructions for setting up the Python environment |
-| [Cheat Sheets](docs/cheat_sheets.md) | Git commands, naming conventions, and other helpful tips |
+| File                                             | Description                                                   |
+|------------------------------------------------- |---------------------------------------------------------------|
+| [Tasks](docs/tasks.md)                           | Project tasks tracking - completed and pending items          |
+| [CNN Model, stage 1](docs/cnn_model.md)          | Details about the CNN model training methodology and results  |
+| [CNN Model, stage 2](docs/cnn_sam2.md)           | Details about the CNN model trained with the segmented masks  |
+| [Environment Configuration](docs/environment.md) | Instructions for setting up the Python environment            |
+| [Cheat Sheets](docs/cheat_sheets.md)             | Git commands, naming conventions, and other helpful tips      |
 
 ## Results
 
