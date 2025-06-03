@@ -16,7 +16,7 @@ class NotifyUser(object):
         self.smtp_server = 'smtp.gmail.com'
         self.smtp_port = 587  # SMTP server port number
         self.username = 'soledadd1974@gmail.com'  # email address
-        self.password = 'twok dskr aqdb abdt'  # email password
+        self.password = 'rtiv ouyr gzzx xnbi'  # email password
 
         self.msg = EmailMessage()
         self.msg['Subject'] = 'Script Execution Completed'
