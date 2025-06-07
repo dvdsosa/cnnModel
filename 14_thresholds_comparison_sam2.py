@@ -2,8 +2,10 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
+PLOT_GINI = False  # Set to True to plot Gini coefficient bars and axis
+
 # Load data
-with open('threshold_results_stage1.json', 'r') as f:
+with open('threshold_results_stage2.json', 'r') as f:
     data = json.load(f)
 
 # Prepare thresholds and metrics
@@ -13,6 +15,7 @@ thresholds_str = [f"{t:.2f}" for t in thresholds]
 accuracy = []
 mean_time = []
 faiss_size = []
+gini_values = []
 
 for t in thresholds:
     t_str = f"{t:.2f}"
@@ -25,10 +28,12 @@ for t in thresholds:
         accuracy.append(entry["Multiclass Accuracy"])
         mean_time.append(entry["Mean processing time per image (seconds)"])
         faiss_size.append(entry["FAISS index file size (MB)"])
+        gini_values.append(entry.get("Gini Coefficient", np.nan))
     else:
         accuracy.append(np.nan)
         mean_time.append(np.nan)
         faiss_size.append(np.nan)
+        gini_values.append(np.nan)
 
 plt.style.use('seaborn-v0_8-whitegrid')
 plt.rcParams.update({
@@ -38,6 +43,19 @@ plt.rcParams.update({
 })
 
 fig, ax1 = plt.subplots(figsize=(10, 6))
+
+# --- Gini coefficient axis (leftmost) ---
+if PLOT_GINI:
+    ax0 = ax1.twinx()
+    ax0.spines['left'].set_position(('outward', 60))
+    ax0.spines['left'].set_visible(True)
+    ax0.yaxis.set_label_position('left')
+    ax0.yaxis.set_ticks_position('left')
+    color0 = 'tab:purple'
+    ax0.set_ylabel('Gini Coefficient (Class Imbalance)', color=color0)
+    b0 = ax0.bar(thresholds, gini_values, width=0.008, color=color0, alpha=0.3, label='Gini Coefficient')
+    ax0.tick_params(axis='y', labelcolor=color0)
+    ax0.set_ylim(0, 1)
 
 color1 = 'tab:blue'
 ax1.set_xlabel('Similarity Threshold')
@@ -65,8 +83,11 @@ lines = [l1, l2, l3]
 labels = [line.get_label() for line in lines]
 ax1.legend(lines, labels, loc='lower right', fontsize=11)
 
-plt.title('Similarity Threshold vs Accuracy, Processing Time, and FAISS Size', fontsize=15, fontweight='bold', family='serif')
+if PLOT_GINI:
+    plt.title('Similarity Threshold vs Accuracy, Processing Time, FAISS Size, and Class Imbalance', fontsize=15, fontweight='bold', family='serif')
+else:
+    plt.title('Similarity Threshold vs Accuracy, Processing Time, and FAISS Size', fontsize=15, fontweight='bold', family='serif')
 plt.tight_layout()
-plt.savefig('08_thresholds_comparison_stage1.png', dpi=300)
+plt.savefig('14_thresholds_comparison_stage2.png', dpi=300)
 plt.show()
 plt.close()
