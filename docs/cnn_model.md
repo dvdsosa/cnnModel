@@ -72,9 +72,9 @@ python main_supcon.py --batch_size 32 --num_workers 8 --learning_rate 0.016 --lr
 
 ### Results
 
-Resnet50timm, backbone batch_size = 64 and 32, learning_rate = 0.016, employed dataset DYB-linearHead, head trained using the frozen backbone on each epoch and validated with the DYB-original/val folder using a bs = 256 and learning_rate = 0.25. 17 jul 20:03.
+Resnet50timm, backbone batch_size = 64 and 32, learning_rate = 0.016, employed dataset DYB-linearHead, head trained using the frozen backbone on each epoch and validated with the DYB-original/val folder using a bs = 256 and learning_rate = 2.5. 17 jul 20:03 2025.
 
-SeResNext50timm, backbone batch_size = 32, learning_rate = 0.016, employed dataset DYB-linearHead, head trained using the frozen backbone on each epoch and validated with the DYB-original/val folder using a bs = 256 and learning_rate = 0.25. 6 ago 1:55
+SeResNext50timm, backbone batch_size = 32, learning_rate = 0.016, employed dataset DYB-linearHead, head trained using the frozen backbone on each epoch and validated with the DYB-original/val folder using a bs = 256 and learning_rate = 2.5. 6 ago 1:55 2025.
 
 | | ResNet50 | ResNet50 | SeResNext50 |
 | :-----------: | :----------------------: | :-----: | :-----: |

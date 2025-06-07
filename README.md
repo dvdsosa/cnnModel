@@ -28,7 +28,9 @@ This repository contains code and documentation for training ResNet50 with Super
 
 ## Results
 
-Selected SIMILARITY_THRESHOLD value of 0.89, as determined from the [comparison shown in the figure below](08_thresholds_comparison.png):
+Selected **SIMILARITY_THRESHOLD** value of 0.89 for stage-1, as determined from the comparison shown in the figure below:
+
+![](08_thresholds_comparison_stage1.png)
 
 ```json
   "0.88": {
@@ -48,4 +50,45 @@ Selected SIMILARITY_THRESHOLD value of 0.89, as determined from the [comparison 
   },
 ```
 
-![Comparison of Thresholds](08_thresholds_comparison.png)
+Selected **SIMILARITY_THRESHOLD** value of 0.90 for stage-2, as determined from the comparison shown in the figure below:
+
+![](14_thresholds_comparison_stage2.png)
+
+```json
+ "0.89": {
+    "Multiclass Accuracy": 91.27,
+    "Multiclass Precision (macro)": 83.27,
+    "Multiclass Recall (macro)": 80.54,
+    "Multiclass F1 Score (macro)": 80.65,
+    "Total elapsed time (seconds)": 70.34,
+    "Mean processing time per image (seconds)": 0.0119,
+    "FAISS index file size (MB)": 130.13,
+    "Gini Coefficient": 0.685,
+    "Imbalance Ratio": 703.333,
+    "Entropy": 3.543
+  },
+  "0.9": {
+    "Multiclass Accuracy": 91.32,
+    "Multiclass Precision (macro)": 82.45,
+    "Multiclass Recall (macro)": 80.24,
+    "Multiclass F1 Score (macro)": 80.38,
+    "Total elapsed time (seconds)": 72.99,
+    "Mean processing time per image (seconds)": 0.0123,
+    "FAISS index file size (MB)": 140.23,
+    "Gini Coefficient": 0.686,
+    "Imbalance Ratio": 766.0,
+    "Entropy": 3.544
+  },
+  "0.91": {
+    "Multiclass Accuracy": 91.27,
+    "Multiclass Precision (macro)": 82.65,
+    "Multiclass Recall (macro)": 80.04,
+    "Multiclass F1 Score (macro)": 80.49,
+    "Total elapsed time (seconds)": 75.91,
+    "Mean processing time per image (seconds)": 0.0128,
+    "FAISS index file size (MB)": 149.89,
+    "Gini Coefficient": 0.687,
+    "Imbalance Ratio": 612.25,
+    "Entropy": 3.545
+  },
+```
