@@ -9,14 +9,22 @@ notify_me({'elapsed_days': 1, 'elapsed_hours': 15})
 
 """
 import smtplib
+import os
 from email.message import EmailMessage
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 class NotifyUser(object):
     def __init__(self) -> None:
         self.smtp_server = 'smtp.gmail.com'
         self.smtp_port = 587  # SMTP server port number
         self.username = 'soledadd1974@gmail.com'  # email address
-        self.password = 'rtiv ouyr gzzx xnbi'  # email password
+        self.password = os.getenv('EMAIL_PASSWORD')  # email password from environment variable
+        
+        if not self.password:
+            raise ValueError("EMAIL_PASSWORD environment variable not found. Please check your .env file.")
 
         self.msg = EmailMessage()
         self.msg['Subject'] = 'Script Execution Completed'
