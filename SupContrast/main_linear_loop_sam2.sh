@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the directory containing the files
-dir="/home/dsosatr/tesis/cnnmodel/SupContrast/save/SupCon/path_models/SupCon_path_resnet50timm_lr_0.016_decay_0.0001_bsz_32_temp_0.07_trial_0_cosine_warm-stage-2"
+dir="/home/dsosatr/tesis/cnnmodel/SupContrast/save/SupCon/path_models/SupCon_path_resnet50timm_lr_0.016_decay_0.0001_bsz_32_temp_0.07_trial_0_cosine_warm-stage2-full-image"
 
 # Loop over each .pth file in the directory in reverse order
 ls -r "$dir"/*.pth | sort -V -r | while read -r file

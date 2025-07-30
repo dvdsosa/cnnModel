@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 FAISS_INDEX_PATH = 'faiss_index_stage2.bin'
 SQLITE_DB_PATH = 'plankton_db_stage2.sqlite'
-SIMILARITY_THRESHOLD = 0.9
+SIMILARITY_THRESHOLD = 0.93
 
 def load_faiss_index(index_path):
     if not os.path.exists(index_path):
@@ -145,10 +145,10 @@ SIMILARITY_THRESHOLD = 1.0
     keep_ids = [int(faiss_id) for faiss_id, _ in mappings if int(faiss_id) not in ids_to_remove]
 
     # Save pruned database to a new file and get new mappings with sequential faiss_id
-    new_mappings = save_pruned_db(SQLITE_DB_PATH, mappings, ids_to_remove, 'plankton_db_stage2_pruned_090.sqlite', keep_ids)
+    new_mappings = save_pruned_db(SQLITE_DB_PATH, mappings, ids_to_remove, 'plankton_db_stage2_pruned.sqlite', keep_ids)
 
     # Save pruned FAISS index in the same order as new_mappings (sequential IDs)
-    save_pruned_faiss_index(faiss_index, keep_ids, 'faiss_index_stage2_pruned_090.bin')
+    save_pruned_faiss_index(faiss_index, keep_ids, 'faiss_index_stage2_pruned.bin')
 
 if __name__ == '__main__':
     main()
