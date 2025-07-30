@@ -10,10 +10,11 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/SupContrast",
             "justMyCode": false,
+            "python": "${workspaceFolder}/myenvTesis/bin/python",
             "main_supcon_args": ["--batch_size", "32", "--num_workers", "8", "--learning_rate", "0.016", "--lr_decay_epochs", "10", "--temp", "0.07", "--cosine", "--mean", "0.0463, 0.0475, 0.0473", "--std", "0.1505, 0.1525, 0.1516", "--data_folder", "/home/dsosatr/ofa/segment-anything/output/sam2_train_masks_dataset", "--size", "224"],
-            "main_linear_args": ["--batch_size", "256", "--learning_rate", "2.5", "--model", "resnet50timm", "--ckpt", "/home/dsosatr/tesis/cnnmodel/SupContrast/save/SupCon/path_models/SupCon_path_resnet50timm_lr_0.016_decay_0.0001_bsz_32_temp_0.07_trial_0_cosine_warm-stage-2/last.pth", "--mean", "0.0463, 0.0475, 0.0473", "--std", "0.1505, 0.1525, 0.1516", "--dataset", "path", "--data_folder", "/home/dsosatr/ofa/segment-anything/output/sam2_train_masks_yes/", "--val_folder", "/home/dsosatr/ofa/segment-anything/output/sam2_val_masks_yes/", "--size", "224"],
+            "main_linear_args": ["--batch_size", "256", "--learning_rate", "2.5", "--model", "resnet50timm", "--ckpt", "/home/dsosatr/tesis/cnnmodel/SupContrast/save/SupCon/path_models/SupCon_path_resnet50timm_lr_0.016_decay_0.0001_bsz_32_temp_0.07_trial_0_cosine_warm-stage2-full-image/last.pth", "--mean", "0.0463, 0.0475, 0.0473", "--std", "0.1505, 0.1525, 0.1516", "--dataset", "path", "--data_folder", "/home/dsosatr/ofa/segment-anything/output/sam2_train_masks_yes/", "--val_folder", "/home/dsosatr/ofa/segment-anything/output/sam2_val_masks_yes/", "--size", "224"],
         }
     ]
 }

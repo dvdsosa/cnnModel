@@ -10,6 +10,29 @@ from SupContrast.networks.resnet_big import FeatureExtractor
 from SupContrast.networks.resnet_big import SupConResNet, LinearClassifier
 from tqdm import tqdm
 
+def custom_collate_fn(batch):
+    """
+    Custom collate function to handle problematic images.
+    Filters out None values and ensures all tensors have the same shape.
+    """
+    # Filter out None values
+    batch = [item for item in batch if item is not None]
+    
+    if len(batch) == 0:
+        return None
+    
+    try:
+        # Separate images and labels
+        images, labels = zip(*batch)
+        
+        # Stack images into a batch tensor
+        images = torch.stack(images, 0)
+        
+        return images, labels
+    except Exception as e:
+        print(f"Error in collate function: {e}")
+        return None
+
 def init_db(conn, cursor):
     """
     Initializes the database by creating the necessary table for FAISS ID to label mapping.
@@ -115,35 +138,48 @@ def process_image_batch(train_loader, model, sql_db_path='plankton_db_stage2.sql
     
     try:
         with torch.no_grad():
-            for idx, (images, labels) in enumerate(tqdm(train_loader)):
-                images = images.float().cuda()
-                bsz = len(labels)
+            for idx, batch_data in enumerate(tqdm(train_loader)):
+                # Skip None batches (corrupted images)
+                if batch_data is None:
+                    print(f"Skipping batch {idx} due to corrupted images")
+                    continue
+                    
+                images, labels = batch_data
                 
-                # Extract features
-                image_feature_vector = model.encoder(images)
-                
-                # Process each feature vector
-                for i, (label, feature_vector) in enumerate(zip(labels, image_feature_vector)):
-                    # L2 normalize the feature vector for comparing using cosine similarity (not performed on the model.encoder)
-                    feature_vector = torch.nn.functional.normalize(feature_vector, p=2, dim=0)
-                    # FAISS requires Numpy arrays to be of type float32, stored in CPU memory, and flattened into a 1D structure for optimal processing.
-                    feature_np = feature_vector.cpu().numpy().flatten().astype(np.float32)
+                try:
+                    images = images.float().cuda()
+                    bsz = len(labels)
                     
-                    # Add vector to FAISS index
-                    faiss_index.add(feature_np.reshape(1, -1))
-                                        
-                    # Store mapping in SQLite
-                    cursor.execute('''
-                    INSERT INTO feature_mappings (faiss_id, label)
-                    VALUES (?, ?)
-                    ''', (int(faiss_id), label))
+                    # Extract features
+                    image_feature_vector = model.encoder(images)
                     
-                    # Update the FAISS ID (index is zero-based)
-                    faiss_id += 1
-                    #print(f"Processed image with faiss_id {faiss_id} with label {label}")
+                    # Process each feature vector
+                    for i, (label, feature_vector) in enumerate(zip(labels, image_feature_vector)):
+                        # L2 normalize the feature vector for comparing using cosine similarity (not performed on the model.encoder)
+                        feature_vector = torch.nn.functional.normalize(feature_vector, p=2, dim=0)
+                        # FAISS requires Numpy arrays to be of type float32, stored in CPU memory, and flattened into a 1D structure for optimal processing.
+                        feature_np = feature_vector.cpu().numpy().flatten().astype(np.float32)
+                        
+                        # Add vector to FAISS index
+                        faiss_index.add(feature_np.reshape(1, -1))
+                                            
+                        # Store mapping in SQLite
+                        cursor.execute('''
+                        INSERT INTO feature_mappings (faiss_id, label)
+                        VALUES (?, ?)
+                        ''', (int(faiss_id), label))
+                        
+                        # Update the FAISS ID (index is zero-based)
+                        faiss_id += 1
+                        #print(f"Processed image with faiss_id {faiss_id} with label {label}")
+                        
+                    # Commit every batch to avoid data loss
+                    conn.commit()
                     
-                # Commit every batch to avoid data loss
-                conn.commit()
+                except Exception as batch_error:
+                    print(f"Error processing batch {idx}: {batch_error}")
+                    print(f"Skipping batch {idx} and continuing...")
+                    continue
     
     except Exception as e:
         print(f"Error processing batch: {e}")
@@ -205,7 +241,7 @@ class CustomDataset(datasets.ImageFolder):
     A custom dataset class that extends the ImageFolder dataset from torchvision.
 
     This class overrides the __getitem__ method to return the image tensor along with the class name
-    instead of the class index.
+    instead of the class index, and handles corrupted images gracefully.
 
     Methods
     -------
@@ -219,15 +255,19 @@ class CustomDataset(datasets.ImageFolder):
 
     Returns
     -------
-    tuple
-        A tuple containing the image tensor and the class name.
+    tuple or None
+        A tuple containing the image tensor and the class name, or None if the image is corrupted.
     """
     
     def __getitem__(self, index):
-        original_tuple = super(CustomDataset, self).__getitem__(index)
-        path, _ = self.samples[index]
-        class_name = self.classes[original_tuple[1]]
-        return original_tuple[0], class_name
+        try:
+            original_tuple = super(CustomDataset, self).__getitem__(index)
+            path, _ = self.samples[index]
+            class_name = self.classes[original_tuple[1]]
+            return original_tuple[0], class_name
+        except Exception as e:
+            print(f"Error loading image at index {index}: {e}")
+            return None
 
 def set_loader(opt):
     """
@@ -247,6 +287,8 @@ def set_loader(opt):
     normalize = transforms.Normalize(mean=mean, std=std)
 
     val_transform = transforms.Compose([
+        transforms.Resize(256),  # Resize the smallest side to 256
+        transforms.CenterCrop(224),  # Crop the center of the image
         transforms.ToTensor(),  # Convert the image to a tensor
         normalize  # Normalize the image
     ])
@@ -258,7 +300,7 @@ def set_loader(opt):
 
     val_loader = torch.utils.data.DataLoader(
         custom_val_dataset, batch_size=opt.batch_size, shuffle=False,
-        num_workers=8, pin_memory=True)
+        num_workers=0, pin_memory=True, collate_fn=custom_collate_fn)  # Use custom collate function
 
     return val_loader
 

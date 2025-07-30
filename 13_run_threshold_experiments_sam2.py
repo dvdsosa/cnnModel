@@ -51,13 +51,33 @@ def extract_metrics(output):
     return None
 
 def get_class_counts_from_db(db_path):
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute("SELECT label FROM feature_mappings")
-    labels = [row[0] for row in cursor.fetchall()]
-    conn.close()
-    counts = Counter(labels)
-    return list(counts.values())
+    if not os.path.exists(db_path):
+        print(f"Error: Database file {db_path} does not exist")
+        return []
+    
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        # Check if table exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='feature_mappings'")
+        if not cursor.fetchone():
+            # List all tables for debugging
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            tables = cursor.fetchall()
+            print(f"Error: Table 'feature_mappings' not found in {db_path}")
+            print(f"Available tables: {[table[0] for table in tables]}")
+            conn.close()
+            return []
+        
+        cursor.execute("SELECT label FROM feature_mappings")
+        labels = [row[0] for row in cursor.fetchall()]
+        conn.close()
+        counts = Counter(labels)
+        return list(counts.values())
+    except Exception as e:
+        print(f"Error reading database {db_path}: {e}")
+        return []
 
 def gini_coefficient(counts):
     counts = np.array(counts)
@@ -102,7 +122,7 @@ def main():
         output = run_script(INFERENCE_SCRIPT)
         metrics = extract_metrics(output)
         # --- Compute Gini coefficient, imbalance ratio, and entropy from pruned DB ---
-        class_counts = get_class_counts_from_db('plankton_db_pruned.sqlite')
+        class_counts = get_class_counts_from_db('plankton_db_stage2_pruned.sqlite')
         gini = gini_coefficient(class_counts)
         ir = imbalance_ratio(class_counts)
         ent = class_entropy(class_counts)

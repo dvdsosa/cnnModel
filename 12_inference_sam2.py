@@ -62,8 +62,8 @@ def get_label_from_db(cursor, faiss_id):
     return row[0] if row else None
 
 def main():
-    FAISS_INDEX_PATH = 'faiss_index_pruned.bin'
-    SQLITE_DB_PATH = 'plankton_db_pruned.sqlite'
+    FAISS_INDEX_PATH = 'faiss_index_stage2_pruned.bin'
+    SQLITE_DB_PATH = 'plankton_db_stage2_pruned.sqlite'
     CKPT_PATH = '/home/dsosatr/tesis/cnnmodel/SupContrast/pesos/resnet50_stage2.pth'
     MODEL_NAME = 'resnet50timm'
 
